@@ -246,22 +246,43 @@ resource "azurerm_private_endpoint" "kv_pe" {
   tags = local.tags
 }
 
-resource "azurerm_storage_account" "this" {
-  name = "sa${local.func_name}"
-  resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
-  account_tier        = "Standard"
-  account_replication_type = "LRS"
+resource "azapi_resource" "storage_account" {
+  type      = "Microsoft.Storage/storageAccounts@2023-01-01"
+  name      = "sa${local.func_name}"
+  location  = azurerm_resource_group.this.location
+  parent_id = azurerm_resource_group.this.id
+
+  body = {
+    sku = {
+      name = "Standard_LRS"
+    }
+    kind = "StorageV2"
+    properties = {
+      accessTier                = "Hot"
+      allowBlobPublicAccess     = false
+      minimumTlsVersion         = "TLS1_2"
+      supportsHttpsTrafficOnly  = true
+    }
+  }
+
   tags = local.tags
 }
 
-resource "azurerm_storage_container" "tfstate" {
-  name                  = "tfstate"
-  storage_account_id  = azurerm_storage_account.this.id
+resource "azapi_resource" "tfstate_container" {
+  type      = "Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01"
+  name      = "tfstate"
+  parent_id = "${azapi_resource.storage_account.id}/blobServices/default"
+
+  body = {
+    properties = {
+      publicAccess = "None"
+    }
+  }
 }
 
+
 resource "azurerm_private_endpoint" "sa_pe" {
-  depends_on = [ azurerm_storage_container.tfstate ]
+  depends_on = [ azapi_resource.tfstate_container ]
   name                = "pe-sa-${local.func_name}"
   location            = azurerm_resource_group.this.location
   resource_group_name = azurerm_resource_group.this.name
@@ -269,7 +290,7 @@ resource "azurerm_private_endpoint" "sa_pe" {
 
   private_service_connection {
     name                           = "psc-sa-${local.func_name}"
-    private_connection_resource_id = azurerm_storage_account.this.id
+    private_connection_resource_id = azapi_resource.storage_account.id
     is_manual_connection           = false
     subresource_names              = ["blob"]
   }
@@ -310,7 +331,7 @@ resource "azurerm_role_assignment" "contributor" {
 }
 
 resource "azurerm_role_assignment" "blob" {
-  scope                = azurerm_storage_account.this.id
+  scope                = azapi_resource.storage_account.id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_user_assigned_identity.this.principal_id
   
@@ -339,7 +360,7 @@ resource "azurerm_container_app_environment" "this" {
   }
 }
 
-resource "azurerm_container_app" "agent" {
+resource "azurerm_container_app" "this" {
   name                         = "aca-${local.func_name}"
   container_app_environment_id = azurerm_container_app_environment.this.id
   resource_group_name          = azurerm_resource_group.this.name
@@ -367,7 +388,17 @@ resource "azurerm_container_app" "agent" {
         name = "AZURE_SUBSCRIPTION_ID"
         value = data.azurerm_client_config.current.subscription_id
       }
-     
+      env {
+        name = "TF_VAR_storage_account_name"
+        value = azapi_resource.storage_account.name
+      }
+
+      env {
+        name = "TF_VAR_resource_group_name"
+        value = azurerm_resource_group.this.name
+      }
+
+
     }
     min_replicas = 1
     max_replicas = 1

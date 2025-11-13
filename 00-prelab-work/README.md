@@ -34,3 +34,13 @@ Apply the terraform code to create the lab.
 ```
 terraform apply
 ```
+
+## Connect to jumpbox
+Get the command to connect to the jumpbox
+```
+terraform output containerapp_exec_command
+```
+It should return something like:
+```
+az containerapp exec -n <aca_name> -g <rg_name> --command /bin/bash
+```
