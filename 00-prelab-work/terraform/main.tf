@@ -400,7 +400,7 @@ resource "azurerm_container_app" "this" {
 
       env {
         name = "GH_REPO"
-        value = local.gh_repo
+        value = var.gh_repo
       }
 
 
