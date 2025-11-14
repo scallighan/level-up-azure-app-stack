@@ -398,6 +398,11 @@ resource "azurerm_container_app" "this" {
         value = azurerm_resource_group.this.name
       }
 
+      env {
+        name = "GH_REPO"
+        value = local.gh_repo
+      }
+
 
     }
     min_replicas = 1

@@ -9,5 +9,6 @@ RUN curl -fSLo /tmp/terraform.zip https://releases.hashicorp.com/terraform/${TER
  && rm /tmp/terraform.zip \
  && terraform -version
 
+COPY startup.sh /startup.sh
 
-ENTRYPOINT [ "nginx", "-g", "daemon off;" ]
+ENTRYPOINT [ "/startup.sh" ]
