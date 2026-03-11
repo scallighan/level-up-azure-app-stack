@@ -27,6 +27,21 @@ data "azurerm_private_dns_zone" "search" {
   resource_group_name = var.resource_group_name
 }
 
+data "azurerm_private_dns_zone" "cognitiveservices" {
+  name                = "privatelink.cognitiveservices.azure.com"
+  resource_group_name = var.resource_group_name
+}
+
+data "azurerm_private_dns_zone" "servicesai" {
+  name                = "privatelink.services.ai.azure.com"
+  resource_group_name = var.resource_group_name
+}
+
+data "azurerm_private_dns_zone" "openai" {
+  name                = "privatelink.openai.azure.com"
+  resource_group_name = var.resource_group_name
+}
+
 data "azurerm_subnet" "pe" {
   name                 = "snet-pe-${var.func_name}-${local.loc_for_naming}"
   resource_group_name  = var.resource_group_name

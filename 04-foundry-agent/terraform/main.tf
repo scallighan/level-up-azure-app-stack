@@ -283,6 +283,36 @@ resource "azurerm_private_endpoint" "pe_aisearch" {
   }
 }
 
+resource "azurerm_private_endpoint" "pe_aifoundry" {
+  depends_on = [
+    azurerm_private_endpoint.pe_aisearch,
+    azapi_resource.ai_foundry
+  ]
+
+  name                = "${azapi_resource.ai_foundry.name}-private-endpoint"
+  location            = data.azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
+  subnet_id           = data.azurerm_subnet.pe.id
+
+  private_service_connection {
+    name                           = "${azapi_resource.ai_foundry.name}-private-link-service-connection"
+    private_connection_resource_id = azapi_resource.ai_foundry.id
+    subresource_names = [
+      "account"
+    ]
+    is_manual_connection = false
+  }
+
+  private_dns_zone_group {
+    name = "${azapi_resource.ai_foundry.name}-dns-config"
+    private_dns_zone_ids = [
+      data.azurerm_private_dns_zone.servicesai.id,
+      data.azurerm_private_dns_zone.openai.id,
+      data.azurerm_private_dns_zone.cognitiveservices.id,
+    ]
+  }
+}
+
 resource "azapi_resource" "ai_foundry_project" {
   depends_on = [
     azapi_resource.ai_foundry,
@@ -518,6 +548,18 @@ resource "azurerm_cosmosdb_sql_role_assignment" "cosmosdb_db_sql_role_aifp_entit
   resource_group_name = data.azurerm_resource_group.this.name
   account_name        = azurerm_cosmosdb_account.cosmosdb.name
   scope               = "${azurerm_cosmosdb_account.cosmosdb.id}/dbs/enterprise_memory/colls/${local.project_id_guid}-agent-entity-store"
+  role_definition_id  = "${azurerm_cosmosdb_account.cosmosdb.id}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002"
+  principal_id        = azapi_resource.ai_foundry_project.output.identity.principalId
+}
+
+resource "azurerm_cosmosdb_sql_role_assignment" "cosmosdb_db_sql_role_aifp_agent_definitions_v1" {
+  depends_on = [
+    azurerm_cosmosdb_sql_role_assignment.cosmosdb_db_sql_role_aifp_system_thread_name
+  ]
+  name                = uuidv5("dns", "${azapi_resource.ai_foundry_project.name}${azapi_resource.ai_foundry_project.output.identity.principalId}entitystore_dbsqlrole")
+  resource_group_name = data.azurerm_resource_group.this.name
+  account_name        = azurerm_cosmosdb_account.cosmosdb.name
+  scope               = "${azurerm_cosmosdb_account.cosmosdb.id}/dbs/enterprise_memory/colls/${local.project_id_guid}-agent-definitions-v1"
   role_definition_id  = "${azurerm_cosmosdb_account.cosmosdb.id}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002"
   principal_id        = azapi_resource.ai_foundry_project.output.identity.principalId
 }
