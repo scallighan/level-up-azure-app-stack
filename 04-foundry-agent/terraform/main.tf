@@ -139,7 +139,7 @@ resource "azapi_resource" "ai_search" {
 
 resource "azapi_resource" "ai_foundry" {
   type                      = "Microsoft.CognitiveServices/accounts@2025-06-01"
-  name                      = "aifoundry${random_string.unique.result}"
+  name                      = "aif${local.func_name}"
   parent_id                 = data.azurerm_resource_group.this.id
   location                  = data.azurerm_resource_group.this.location
   schema_validation_enabled = false
@@ -158,7 +158,7 @@ resource "azapi_resource" "ai_foundry" {
 
       allowProjectManagement = true
 
-      customSubDomainName = "aifoundry${random_string.unique.result}"
+      customSubDomainName = "aif${local.func_name}"
 
       publicNetworkAccess = "Disabled"
       networkAcls = {
