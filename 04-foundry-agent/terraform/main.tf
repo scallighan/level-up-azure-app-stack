@@ -267,8 +267,7 @@ resource "azapi_resource" "ai_foundry_project" {
     azapi_resource.ai_foundry,
     azurerm_private_endpoint.pe_storage,
     azurerm_private_endpoint.pe_cosmosdb,
-    azurerm_private_endpoint.pe_aisearch,
-    azurerm_private_endpoint.pe_aifoundry
+    azurerm_private_endpoint.pe_aisearch
   ]
 
   type                      = "Microsoft.CognitiveServices/accounts/projects@2025-06-01"
