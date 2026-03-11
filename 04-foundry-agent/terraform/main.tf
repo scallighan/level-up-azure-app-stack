@@ -32,15 +32,6 @@ provider "azurerm" {
   subscription_id = var.subscription_id
 }
 
-data "azurerm_resource_group" "this" {
-  name = var.resource_group_name
-}
-
-data "azurerm_virtual_network" "this" {
-  name                = "vnet-${var.func_name}-${local.loc_for_naming}"
-  resource_group_name = var.resource_group_name
-}
-
 resource "azurerm_subnet" "foundry" {
   name                 = "snet-foundry-${local.func_name}-${local.loc_for_naming}"
   resource_group_name  = data.azurerm_resource_group.this.name
@@ -87,25 +78,20 @@ resource "azurerm_cosmosdb_account" "cosmosdb" {
   resource_group_name = data.azurerm_resource_group.this.name
   location = data.azurerm_resource_group.this.location
 
-  # General settings
   offer_type        = "Standard"
   kind              = "GlobalDocumentDB"
   free_tier_enabled = false
 
-  # Set security-related settings
   local_authentication_disabled = true
   public_network_access_enabled = false
 
-  # Set high availability and failover settings
   automatic_failover_enabled       = false
   multiple_write_locations_enabled = false
 
-  # Configure consistency settings
   consistency_policy {
     consistency_level = "Session"
   }
 
-  # Configure single location with no zone redundancy to reduce costs
   geo_location {
     location          = data.azurerm_resource_group.this.location
     failover_priority = 0
@@ -115,14 +101,14 @@ resource "azurerm_cosmosdb_account" "cosmosdb" {
 
 resource "azapi_resource" "ai_search" {
   type                      = "Microsoft.Search/searchServices@2025-05-01"
-  name                      = "aisearch${local.func_name}"
+  name                      = "ais${local.func_name}"
   parent_id                 = data.azurerm_resource_group.this.id
   location                  = data.azurerm_resource_group.this.location
   schema_validation_enabled = true
 
   body = {
     sku = {
-      name = "standard"
+      name = "free"
     }
 
     identity = {
@@ -131,24 +117,144 @@ resource "azapi_resource" "ai_search" {
 
     properties = {
 
-      # Search-specific properties
       replicaCount   = 1
       partitionCount = 1
       hostingMode    = "default"
       semanticSearch = "disabled"
 
-      # Identity-related controls
       disableLocalAuth = false
       authOptions = {
         aadOrApiKey = {
           aadAuthFailureMode = "http401WithBearerChallenge"
         }
       }
-      # Networking-related controls
+
       publicNetworkAccess = "Disabled"
       networkRuleSet = {
         bypass = "None"
       }
     }
+  }
+}
+
+resource "azapi_resource" "ai_foundry" {
+  type                      = "Microsoft.CognitiveServices/accounts@2025-06-01"
+  name                      = "aifoundry${random_string.unique.result}"
+  parent_id                 = data.azurerm_resource_group.this.id
+  location                  = data.azurerm_resource_group.this.location
+  schema_validation_enabled = false
+
+  body = {
+    kind = "AIServices",
+    sku = {
+      name = "S0"
+    }
+    identity = {
+      type = "SystemAssigned"
+    }
+
+    properties = {
+      disableLocalAuth = false
+
+      allowProjectManagement = true
+
+      customSubDomainName = "aifoundry${random_string.unique.result}"
+
+      publicNetworkAccess = "Disabled"
+      networkAcls = {
+        defaultAction = "Allow"
+      }
+
+      # Enable VNet injection for Standard Agents
+      networkInjections = [
+        {
+          scenario                   = "agent"
+          subnetArmId                = azurerm_subnet.foundry.id
+          useMicrosoftManagedNetwork = false
+        }
+      ]
+    }
+  }
+}
+
+resource "azurerm_private_endpoint" "pe_storage" {
+  depends_on = [
+    azurerm_storage_account.storage_account
+  ]
+
+  name                = "${azurerm_storage_account.storage_account.name}-private-endpoint"
+  location            = data.azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
+  subnet_id           = data.azurerm_subnet.pe.id
+  private_service_connection {
+    name                           = "${azurerm_storage_account.storage_account.name}-private-link-service-connection"
+    private_connection_resource_id = azurerm_storage_account.storage_account.id
+    subresource_names = [
+      "blob"
+    ]
+    is_manual_connection = false
+  }
+
+  private_dns_zone_group {
+    name = "${azurerm_storage_account.storage_account.name}-dns-config"
+    private_dns_zone_ids = [
+      data.azurerm_private_dns_zone.blob.id
+    ]
+  }
+}
+
+resource "azurerm_private_endpoint" "pe_cosmosdb" {
+  depends_on = [
+    azurerm_private_endpoint.pe_storage,
+    azurerm_cosmosdb_account.cosmosdb
+  ]
+
+  name                = "${azurerm_cosmosdb_account.cosmosdb.name}-private-endpoint"
+  location            = data.azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
+  subnet_id           = data.azurerm_subnet.pe.id
+
+  private_service_connection {
+    name                           = "${azurerm_cosmosdb_account.cosmosdb.name}-private-link-service-connection"
+    private_connection_resource_id = azurerm_cosmosdb_account.cosmosdb.id
+    subresource_names = [
+      "Sql"
+    ]
+    is_manual_connection = false
+  }
+
+  private_dns_zone_group {
+    name = "${azurerm_cosmosdb_account.cosmosdb.name}-dns-config"
+    private_dns_zone_ids = [
+      data.azurerm_private_dns_zone.cosmosdb.id
+    ]
+  }
+}
+
+resource "azurerm_private_endpoint" "pe_aisearch" {
+  depends_on = [
+    azurerm_private_endpoint.pe_cosmosdb,
+    azapi_resource.ai_search
+  ]
+
+  name                = "${azapi_resource.ai_search.name}-private-endpoint"
+  location            = data.azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
+  subnet_id           = data.azurerm_subnet.pe.id
+
+  private_service_connection {
+    name                           = "${azapi_resource.ai_search.name}-private-link-service-connection"
+    private_connection_resource_id = azapi_resource.ai_search.id
+    subresource_names = [
+      "searchService"
+    ]
+    is_manual_connection = false
+  }
+
+  private_dns_zone_group {
+    name = "${azapi_resource.ai_search.name}-dns-config"
+    private_dns_zone_ids = [
+      data.azurerm_private_dns_zone.search.id
+    ]
   }
 }
