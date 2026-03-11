@@ -557,7 +557,7 @@ resource "azurerm_cosmosdb_sql_role_assignment" "cosmosdb_db_sql_role_aifp_agent
   depends_on = [
     azurerm_cosmosdb_sql_role_assignment.cosmosdb_db_sql_role_aifp_system_thread_name
   ]
-  name                = uuidv5("dns", "${azapi_resource.ai_foundry_project.name}${azapi_resource.ai_foundry_project.output.identity.principalId}entitystore_dbsqlrole")
+  name                = uuidv5("dns", "${azapi_resource.ai_foundry_project.name}${azapi_resource.ai_foundry_project.output.identity.principalId}agentdef_dbsqlrole")
   resource_group_name = data.azurerm_resource_group.this.name
   account_name        = azurerm_cosmosdb_account.cosmosdb.name
   scope               = "${azurerm_cosmosdb_account.cosmosdb.id}/dbs/enterprise_memory/colls/${local.project_id_guid}-agent-definitions-v1"
