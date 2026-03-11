@@ -191,7 +191,7 @@ resource "azurerm_cognitive_deployment" "model" {
 
   sku {
     name     = "GlobalStandard"
-    capacity = 1
+    capacity = 250
   }
 
   model {
