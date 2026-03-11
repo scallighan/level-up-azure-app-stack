@@ -163,7 +163,7 @@ resource "azapi_resource" "ai_foundry" {
 
       customSubDomainName = "aif${local.func_name}"
 
-      publicNetworkAccess = "Disabled"
+      publicNetworkAccess = "Enabled"
       networkAcls = {
         defaultAction = "Allow"
       }
