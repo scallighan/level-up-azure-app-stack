@@ -388,9 +388,25 @@ resource "azurerm_container_app" "this" {
         name = "AZURE_SUBSCRIPTION_ID"
         value = data.azurerm_client_config.current.subscription_id
       }
+
+      env {
+        name = "ARM_USE_AZUREAD"
+        value = "true"
+      }
+
+      env {
+        name = "ARM_TENANT_ID"
+        value = data.azurerm_client_config.current.tenant_id
+      }
+
       env {
         name = "TF_VAR_storage_account_name"
         value = azapi_resource.storage_account.name
+      }
+
+      env {
+        name = "TF_VAR_container_name"
+        value = azapi_resource.tfstate_container.name
       }
 
       env {
@@ -403,6 +419,25 @@ resource "azurerm_container_app" "this" {
         value = var.gh_repo
       }
 
+      env {
+        name = "TF_VAR_gh_repo"
+        value = var.gh_repo
+      }
+
+      env {
+        name = "TF_VAR_location"
+        value = var.location
+      }
+
+      env {
+        name = "TF_VAR_subscription_id"
+        value = data.azurerm_client_config.current.subscription_id
+      }
+
+      env {
+        name = "TF_VAR_func_name"
+        value = local.func_name
+      }
 
     }
     min_replicas = 1
