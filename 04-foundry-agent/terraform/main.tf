@@ -394,7 +394,7 @@ resource "azurerm_role_assignment" "cosmosdb_operator_ai_foundry_project" {
   depends_on = [
     resource.time_sleep.wait_project_identities
   ]
-  name                 = uuidv5("dns", "${azapi_resource.ai_foundry_project.name}${azapi_resource.ai_foundry_project.output.identity.principalId}${var.resource_group_name_resources}cosmosdboperator")
+  name                 = uuidv5("dns", "${azapi_resource.ai_foundry_project.name}${azapi_resource.ai_foundry_project.output.identity.principalId}${var.resource_group_name}cosmosdboperator")
   scope                = azurerm_cosmosdb_account.cosmosdb.id
   role_definition_name = "Cosmos DB Operator"
   principal_id         = azapi_resource.ai_foundry_project.output.identity.principalId
