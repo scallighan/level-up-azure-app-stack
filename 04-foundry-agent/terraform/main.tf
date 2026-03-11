@@ -108,7 +108,7 @@ resource "azapi_resource" "ai_search" {
 
   body = {
     sku = {
-      name = "free"
+      name = "basic"
     }
 
     identity = {
