@@ -187,6 +187,7 @@ resource "azurerm_cognitive_deployment" "model" {
 
   name                 = "gpt-5-mini"
   cognitive_account_id = azapi_resource.ai_foundry.id
+  rai_policy_name      = "Microsoft.DefaultV2"
 
   sku {
     name     = "GlobalStandard"
