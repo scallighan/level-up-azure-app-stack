@@ -66,7 +66,7 @@ resource "azurerm_storage_account" "this" {
 
   account_kind = "StorageV2"
   account_tier = "Standard"
-  accont_replicatoin = "LRS"
+  account_replication_type = "LRS"
 
   shared_access_key_enabled = false
 
