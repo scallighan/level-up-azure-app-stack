@@ -179,16 +179,16 @@ resource "azapi_resource" "ai_foundry" {
 
 resource "azurerm_private_endpoint" "pe_storage" {
   depends_on = [
-    azurerm_storage_account.storage_account
+    azurerm_storage_account.this
   ]
 
-  name                = "${azurerm_storage_account.storage_account.name}-private-endpoint"
+  name                = "${azurerm_storage_account.this.name}-private-endpoint"
   location            = data.azurerm_resource_group.this.location
   resource_group_name = data.azurerm_resource_group.this.name
   subnet_id           = data.azurerm_subnet.pe.id
   private_service_connection {
-    name                           = "${azurerm_storage_account.storage_account.name}-private-link-service-connection"
-    private_connection_resource_id = azurerm_storage_account.storage_account.id
+    name                           = "${azurerm_storage_account.this.name}-private-link-service-connection"
+    private_connection_resource_id = azurerm_storage_account.this.id
     subresource_names = [
       "blob"
     ]
@@ -196,7 +196,7 @@ resource "azurerm_private_endpoint" "pe_storage" {
   }
 
   private_dns_zone_group {
-    name = "${azurerm_storage_account.storage_account.name}-dns-config"
+    name = "${azurerm_storage_account.this.name}-dns-config"
     private_dns_zone_ids = [
       data.azurerm_private_dns_zone.blob.id
     ]
