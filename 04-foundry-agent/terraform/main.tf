@@ -157,7 +157,7 @@ resource "azapi_resource" "ai_foundry" {
     }
 
     properties = {
-      disableLocalAuth = false
+      disableLocalAuth = true
 
       allowProjectManagement = true
 
