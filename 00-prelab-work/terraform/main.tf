@@ -390,13 +390,23 @@ resource "azurerm_container_app" "this" {
       }
 
       env {
-        name = "ARM_USE_AZUREAD"
+        name = "ARM_USE_MSI"
         value = "true"
       }
 
       env {
         name = "ARM_TENANT_ID"
         value = data.azurerm_client_config.current.tenant_id
+      }
+
+      env {
+        name = "ARM_CLIENT_ID"
+        value = azurerm_user_assigned_identity.this.client_id
+      }
+
+      env {
+        name = "APPSETTING_WEBSITE_SITE_NAME"
+        value = "azcli-workaround"
       }
 
       env {
