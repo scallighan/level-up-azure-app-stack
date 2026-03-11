@@ -243,6 +243,11 @@ resource "azurerm_private_endpoint" "kv_pe" {
     subresource_names              = ["vault"]
   }
 
+  private_dns_zone_group {
+    name                 = "vault"
+    private_dns_zone_ids = [azurerm_private_dns_zone.keyvault.id]
+  }
+
   tags = local.tags
 }
 
@@ -293,6 +298,11 @@ resource "azurerm_private_endpoint" "sa_pe" {
     private_connection_resource_id = azapi_resource.storage_account.id
     is_manual_connection           = false
     subresource_names              = ["blob"]
+  }
+
+  private_dns_zone_group {
+    name                 = "blob"
+    private_dns_zone_ids = [azurerm_private_dns_zone.blob.id]
   }
 
   tags = local.tags
@@ -390,7 +400,7 @@ resource "azurerm_container_app" "this" {
       }
 
       env {
-        name = "ARM_USE_MSI"
+        name = "ARM_USE_AZUREAD"
         value = "true"
       }
 

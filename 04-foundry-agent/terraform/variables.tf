@@ -25,7 +25,7 @@ variable "container_name"{
 
 variable "key" {
   type = string
-  default = "01-private-function-app.tfstate"
+  default = "04-foundry-agent.tfstate"
 }
 
 variable "func_name" {
