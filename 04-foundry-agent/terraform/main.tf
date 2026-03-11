@@ -180,9 +180,7 @@ resource "azapi_resource" "ai_foundry" {
   }
 }
 
-resource "azurerm_cognitive_deployment" "aifoundry_deployment_gpt_4o" {
-  provider = azurerm.workload_subscription
-
+resource "azurerm_cognitive_deployment" "model" {
   depends_on = [
     azapi_resource.ai_foundry
   ]
