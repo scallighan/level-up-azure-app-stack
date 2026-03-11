@@ -340,6 +340,12 @@ resource "azurerm_role_assignment" "contributor" {
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
 
+resource "azurerm_role_assignment" "owner" {
+  scope                = azurerm_resource_group.this.id
+  role_definition_name = "Owner"
+  principal_id         = azurerm_user_assigned_identity.this.principal_id 
+}
+
 resource "azurerm_role_assignment" "blob" {
   scope                = azapi_resource.storage_account.id
   role_definition_name = "Storage Blob Data Contributor"

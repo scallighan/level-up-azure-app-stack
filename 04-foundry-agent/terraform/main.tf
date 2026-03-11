@@ -180,6 +180,28 @@ resource "azapi_resource" "ai_foundry" {
   }
 }
 
+resource "azurerm_cognitive_deployment" "aifoundry_deployment_gpt_4o" {
+  provider = azurerm.workload_subscription
+
+  depends_on = [
+    azapi_resource.ai_foundry
+  ]
+
+  name                 = "gpt-5-mini"
+  cognitive_account_id = azapi_resource.ai_foundry.id
+
+  sku {
+    name     = "GlobalStandard"
+    capacity = 1
+  }
+
+  model {
+    format  = "OpenAI"
+    name    = "gpt-5-mini"
+    version = "2025-08-07"
+  }
+}
+
 resource "azurerm_private_endpoint" "pe_storage" {
   depends_on = [
     azurerm_storage_account.this
@@ -296,8 +318,6 @@ resource "azapi_resource" "ai_foundry_project" {
   ]
 }
 
-## Wait 10 seconds for the AI Foundry project system-assigned managed identity to be created and to replicate
-## through Entra ID
 resource "time_sleep" "wait_project_identities" {
   depends_on = [
     azapi_resource.ai_foundry_project
