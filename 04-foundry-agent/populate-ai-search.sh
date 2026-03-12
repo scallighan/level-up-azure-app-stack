@@ -156,10 +156,6 @@ jq '{value: [ .[] | {
 }]}' "${NORMALIZED_DATA_FILE}" > "${DOCUMENTS_FILE}"
 
 auth_header() {
-	if [[ -n "${SEARCH_API_KEY}" ]]; then
-		printf 'api-key: %s' "${SEARCH_API_KEY}"
-		return
-	fi
     az login --identity --client-id $AZURE_CLIENT_ID
 	local access_token
 	access_token="$(az account get-access-token --resource https://search.azure.com --query accessToken -o tsv)"
