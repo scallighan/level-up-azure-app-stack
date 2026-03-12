@@ -31,7 +31,7 @@ provider "azurerm" {
       data_plane_available = false
     }
   }
-
+  storage_use_azuread = true
   subscription_id = var.subscription_id
 }
 
