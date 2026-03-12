@@ -168,6 +168,7 @@ send_request() {
 	local status_code
 
 	response_file="${TMP_DIR}/response.json"
+    echo "Sending ${method} request to ${url}"
 
 	if [[ -n "${body_file}" ]]; then
 		status_code="$(curl -sS -o "${response_file}" -w '%{http_code}' \
