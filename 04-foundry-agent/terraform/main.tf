@@ -639,7 +639,7 @@ resource "azurerm_role_assignment" "storage_blob_data_contributor_current_user" 
 resource "azurerm_role_assignment" "storage_blob_data_contributor_ai_search" {
   scope                = azurerm_storage_account.this.id
   role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = azapi_resource.ai_search.identity.principal_id
+  principal_id         = azapi_resource.ai_search.output.identity.principalId
 }
 
 resource "azurerm_storage_blob" "data" {
