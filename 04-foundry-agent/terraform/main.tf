@@ -201,6 +201,27 @@ resource "azurerm_cognitive_deployment" "model" {
   }
 }
 
+resource "azurerm_cognitive_deployment" "embeddings" {
+  depends_on = [
+    azapi_resource.ai_foundry
+  ]
+
+  name                 = "text-embedding-3-small"
+  cognitive_account_id = azapi_resource.ai_foundry.id
+  rai_policy_name      = "Microsoft.DefaultV2"
+
+  sku {
+    name     = "Standard"
+    capacity = 120
+  }
+
+  model {
+    format  = "OpenAI"
+    name    = "text-embedding-3-small"
+    version = "1"
+  }
+}
+
 resource "azurerm_private_endpoint" "pe_storage" {
   depends_on = [
     azurerm_storage_account.this
