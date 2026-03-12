@@ -152,7 +152,6 @@ jq '{value: [ .[] | {
 }]}' "${NORMALIZED_DATA_FILE}" > "${DOCUMENTS_FILE}"
 
 auth_header() {
-    az login --identity --client-id $AZURE_CLIENT_ID
 	local access_token
 	access_token="$(az account get-access-token --resource https://search.azure.com --query accessToken -o tsv)"
 	printf 'Authorization: Bearer %s' "${access_token}"
@@ -205,6 +204,8 @@ if [[ "${RECREATE_INDEX}" == "true" ]]; then
 		exit 1
 	fi
 fi
+
+az login --identity --client-id $AZURE_CLIENT_ID
 
 echo "Creating or updating index ${INDEX_NAME} on ${SEARCH_ENDPOINT}"
 send_request \
