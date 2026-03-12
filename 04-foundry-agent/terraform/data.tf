@@ -47,3 +47,5 @@ data "azurerm_subnet" "pe" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = data.azurerm_virtual_network.this.name
 }
+
+data "azurerm_client_config" "current" {}

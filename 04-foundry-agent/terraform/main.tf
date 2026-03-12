@@ -609,3 +609,16 @@ resource "azurerm_role_assignment" "storage_blob_data_owner_ai_foundry_project" 
   )
   EOT
 }
+
+## Add role assignments for AI Search - Search Service Contributor and Search Index Data Contributor for the current user
+resource "azurerm_role_assignment" "search_service_contributor_current_user" {
+  scope                = azapi_resource.ai_search.id
+  role_definition_name = "Search Service Contributor"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+resource "azurerm_role_assignment" "search_index_data_contributor_current_user" {
+  scope                = azapi_resource.ai_search.id
+  role_definition_name = "Search Index Data Contributor"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
