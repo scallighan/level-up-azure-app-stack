@@ -59,10 +59,6 @@ if [[ ! -f "${DATA_FILE}" ]]; then
 	exit 1
 fi
 
-if [[ -z "${SEARCH_API_KEY}" ]]; then
-	require_command az
-fi
-
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
