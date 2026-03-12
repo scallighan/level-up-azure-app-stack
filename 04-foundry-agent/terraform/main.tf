@@ -622,3 +622,31 @@ resource "azurerm_role_assignment" "search_index_data_contributor_current_user" 
   role_definition_name = "Search Index Data Contributor"
   principal_id         = data.azurerm_client_config.current.object_id
 }
+
+# setup a blob container for AI Search to index and give the terraform user access to populate
+resource "azurerm_storage_container" "this" {
+  name                  = "search-indexing"
+  storage_account_id = azurerm_storage_account.this.id
+  container_access_type = "private"
+}
+
+resource "azurerm_role_assignment" "storage_blob_data_contributor_current_user" {
+  scope                = azurerm_storage_account.this.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+resource "azurerm_role_assignment" "storage_blob_data_contributor_ai_search" {
+  scope                = azurerm_storage_account.this.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azapi_resource.conn_aisearch.output.identity.principalId
+}
+
+resource "azurerm_storage_blob" "data" {
+  depends_on = [ azurerm_role_assignment.storage_blob_data_contributor_current_user ]
+  name                   = "data.json"
+  storage_account_name   = azurerm_storage_account.this.name
+  storage_container_name = azurerm_storage_container.this.name
+  type                   = "Block"
+  source_content         = file("${path.module}/data/data.json")
+}
