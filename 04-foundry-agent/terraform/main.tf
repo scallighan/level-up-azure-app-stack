@@ -109,6 +109,7 @@ resource "azapi_resource" "ai_search" {
   parent_id                 = data.azurerm_resource_group.this.id
   location                  = data.azurerm_resource_group.this.location
   schema_validation_enabled = true
+  response_export_values    = ["identity.principalId"]
 
   body = {
     sku = {
@@ -139,6 +140,18 @@ resource "azapi_resource" "ai_search" {
       }
     }
   }
+}
+
+resource "azurerm_role_assignment" "openai_user_ai_search" {
+  depends_on = [
+    azapi_resource.ai_search,
+    azapi_resource.ai_foundry
+  ]
+
+  name                 = uuidv5("dns", "${azapi_resource.ai_search.name}${azapi_resource.ai_search.output.identity.principalId}${azapi_resource.ai_foundry.name}cognitiveservicesopenaiuser")
+  scope                = azapi_resource.ai_foundry.id
+  role_definition_name = "Cognitive Services OpenAI User"
+  principal_id         = azapi_resource.ai_search.output.identity.principalId
 }
 
 resource "azapi_resource" "ai_foundry" {
