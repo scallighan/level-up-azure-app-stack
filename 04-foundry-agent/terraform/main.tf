@@ -642,6 +642,12 @@ resource "azurerm_role_assignment" "storage_blob_data_contributor_ai_search" {
   principal_id         = azapi_resource.ai_search.output.identity.principalId
 }
 
+resource "azurerm_role_assignment" "azure_ai_user_ai_search" {
+  scope                = data.azurerm_resource_group.this.id
+  role_definition_name = "Azure AI User"
+  principal_id         = azapi_resource.ai_search.output.identity.principalId 
+}
+
 resource "azurerm_storage_blob" "data" {
   depends_on = [ azurerm_role_assignment.storage_blob_data_contributor_current_user ]
   name                   = "data.json"
