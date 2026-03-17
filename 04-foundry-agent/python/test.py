@@ -32,7 +32,6 @@ with (
     print(f"\nSending user input to agent: {user_input}\n")
     stream_response = openai_client.responses.create(
         stream=True,
-        tool_choice="required",
         input=user_input,
         extra_body={"agent_reference": {"name": agent.name, "type": "agent_reference"}},
     )

@@ -353,6 +353,12 @@ resource "azurerm_role_assignment" "blob" {
   
 }
 
+resource "azurerm_role_assignment" "azure_ai_user" {
+  scope                = azurerm_resource_group.this.id
+  role_definition_name = "Azure AI User"
+  principal_id         = azurerm_user_assigned_identity.this.principal_id 
+}
+
 
 resource "azurerm_container_app_environment" "this" {
   name                       = "ace-${local.func_name}"

@@ -10,9 +10,9 @@ output "storage_account_resource_id"{
     value = azurerm_storage_account.this.id
 }
 
-output "ai_foundry_project_endpoint" {
-  value = 
-}
+# output "ai_foundry_project_endpoint" {
+#   value = azapi_resource.ai_foundry_project.
+# }
 
 output "ai_foundry_model_deployment_name" {
   value = azurerm_cognitive_deployment.model.name
