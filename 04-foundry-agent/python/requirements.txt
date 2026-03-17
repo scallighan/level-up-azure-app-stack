@@ -1,0 +1,3 @@
+dotenv
+agent-framework>=1.0.0rc2
+azure-ai-projects[agents]>=2.0.0b4
