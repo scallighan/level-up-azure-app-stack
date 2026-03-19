@@ -71,6 +71,8 @@ resource "azurerm_service_plan" "this" {
   location            = data.azurerm_resource_group.this.location
   sku_name            = "FC1"
   os_type             = "Linux"
+
+  tags = local.tags
 }
 
 resource "azurerm_function_app_flex_consumption" "example" {
@@ -88,6 +90,8 @@ resource "azurerm_function_app_flex_consumption" "example" {
   maximum_instance_count      = 50
   instance_memory_in_mb       = 2048
 
+  virtual_network_subnet_id = azurerm_subnet.function.id
+
   site_config {}
 
   identity {
@@ -96,4 +100,6 @@ resource "azurerm_function_app_flex_consumption" "example" {
       azurerm_user_assigned_identity.function.id
     ]
   }
+
+  tags = local.tags
 }
