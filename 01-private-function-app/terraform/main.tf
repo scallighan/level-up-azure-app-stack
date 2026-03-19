@@ -75,7 +75,7 @@ resource "azurerm_service_plan" "this" {
   tags = local.tags
 }
 
-resource "azurerm_function_app_flex_consumption" "example" {
+resource "azurerm_function_app_flex_consumption" "this" {
   name                = "func-${local.func_name}"
   resource_group_name = data.azurerm_resource_group.this.name
   location            = data.azurerm_resource_group.this.location
