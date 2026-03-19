@@ -476,6 +476,17 @@ resource "azurerm_container_app" "this" {
     max_replicas = 1
   }
 
+  ingress {
+    allow_insecure_connections = false
+    external_enabled           = true
+    target_port                = 8888
+    transport                  = "auto"
+    traffic_weight {
+      latest_revision = true
+      percentage      = 100
+    }
+  }
+
   identity {
     type = "UserAssigned"
     identity_ids = [azurerm_user_assigned_identity.this.id]

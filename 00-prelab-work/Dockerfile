@@ -9,7 +9,18 @@ RUN curl -fSLo /tmp/terraform.zip https://releases.hashicorp.com/terraform/${TER
  && rm /tmp/terraform.zip \
  && terraform -version
 
+
 RUN ln -sf /usr/bin/python3 /usr/local/bin/python
+RUN pip install jupyterlab dockernel
+
+RUN mkdir -p /etc/nginx/conf.d
+RUN mkdir -p /etc/nginx/templates
+#COPY nginx.conf /etc/nginx/
+
+COPY jupyter_lab_config.py /root/.jupyter/
+
 COPY startup.sh /startup.sh
+
+EXPOSE 80 8888
 
 ENTRYPOINT [ "/startup.sh" ]
