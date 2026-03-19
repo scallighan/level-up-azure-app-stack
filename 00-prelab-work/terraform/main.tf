@@ -119,6 +119,48 @@ resource "azurerm_private_dns_zone_virtual_network_link" "blob" {
   virtual_network_id    = azurerm_virtual_network.this.id
 }
 
+#privatelink.queue.core.windows.net
+resource "azurerm_private_dns_zone" "queue" {
+  name                = "privatelink.queue.core.windows.net"
+  resource_group_name = azurerm_resource_group.this.name
+  tags = local.tags
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "queue" {
+  name                  = "queue"
+  resource_group_name   = azurerm_resource_group.this.name
+  private_dns_zone_name = azurerm_private_dns_zone.queue.name
+  virtual_network_id    = azurerm_virtual_network.this.id
+}
+
+#privatelink.table.core.windows.net
+resource "azurerm_private_dns_zone" "table" {
+  name                = "privatelink.table.core.windows.net"
+  resource_group_name = azurerm_resource_group.this.name
+  tags = local.tags
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "table" {
+  name                  = "table"
+  resource_group_name   = azurerm_resource_group.this.name
+  private_dns_zone_name = azurerm_private_dns_zone.table.name
+  virtual_network_id    = azurerm_virtual_network.this.id
+}
+
+#privatelink.file.core.windows.net
+resource "azurerm_private_dns_zone" "file" {
+  name                = "privatelink.file.core.windows.net"
+  resource_group_name = azurerm_resource_group.this.name
+  tags = local.tags
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "file" {
+  name                  = "file"
+  resource_group_name   = azurerm_resource_group.this.name
+  private_dns_zone_name = azurerm_private_dns_zone.file.name
+  virtual_network_id    = azurerm_virtual_network.this.id
+}
+
 #privatelink.documents.azure.com
 resource "azurerm_private_dns_zone" "documents" {
   name                = "privatelink.documents.azure.com"
@@ -303,6 +345,72 @@ resource "azurerm_private_endpoint" "sa_pe" {
   private_dns_zone_group {
     name                 = "blob"
     private_dns_zone_ids = [azurerm_private_dns_zone.blob.id]
+  }
+
+  tags = local.tags
+}
+
+resource "azurerm_private_endpoint" "sa_queue_pe" {
+  depends_on = [azapi_resource.tfstate_container]
+  name                = "pe-sa-queue-${local.func_name}"
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+  subnet_id           = azurerm_subnet.pe.id
+
+  private_service_connection {
+    name                           = "psc-sa-queue-${local.func_name}"
+    private_connection_resource_id = azapi_resource.storage_account.id
+    is_manual_connection           = false
+    subresource_names              = ["queue"]
+  }
+
+  private_dns_zone_group {
+    name                 = "queue"
+    private_dns_zone_ids = [azurerm_private_dns_zone.queue.id]
+  }
+
+  tags = local.tags
+}
+
+resource "azurerm_private_endpoint" "sa_table_pe" {
+  depends_on = [azapi_resource.tfstate_container]
+  name                = "pe-sa-table-${local.func_name}"
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+  subnet_id           = azurerm_subnet.pe.id
+
+  private_service_connection {
+    name                           = "psc-sa-table-${local.func_name}"
+    private_connection_resource_id = azapi_resource.storage_account.id
+    is_manual_connection           = false
+    subresource_names              = ["table"]
+  }
+
+  private_dns_zone_group {
+    name                 = "table"
+    private_dns_zone_ids = [azurerm_private_dns_zone.table.id]
+  }
+
+  tags = local.tags
+}
+
+resource "azurerm_private_endpoint" "sa_file_pe" {
+  depends_on = [azapi_resource.tfstate_container]
+  name                = "pe-sa-file-${local.func_name}"
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+  subnet_id           = azurerm_subnet.pe.id
+
+  private_service_connection {
+    name                           = "psc-sa-file-${local.func_name}"
+    private_connection_resource_id = azapi_resource.storage_account.id
+    is_manual_connection           = false
+    subresource_names              = ["file"]
+  }
+
+  private_dns_zone_group {
+    name                 = "file"
+    private_dns_zone_ids = [azurerm_private_dns_zone.file.id]
   }
 
   tags = local.tags
