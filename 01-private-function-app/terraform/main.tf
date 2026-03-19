@@ -94,7 +94,9 @@ resource "azurerm_function_app_flex_consumption" "this" {
 
   webdeploy_publish_basic_authentication_enabled = false
 
-  site_config {}
+  site_config {
+     vnet_route_all_enabled = true
+  }
 
   identity {
     type = "UserAssigned"
@@ -104,4 +106,13 @@ resource "azurerm_function_app_flex_consumption" "this" {
   }
 
   tags = local.tags
+}
+
+# exec processor to run func azure functionapp publish $FUNC_NAME --python
+resource "null_resource" "deploy_function_code" {
+  provisioner "local-exec" {
+    command = "cd ../func && func azure functionapp publish ${azurerm_function_app_flex_consumption.this.name} --python"
+  }
+
+  depends_on = [azurerm_function_app_flex_consumption.this]
 }
