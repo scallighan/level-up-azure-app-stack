@@ -66,7 +66,7 @@ resource "azurerm_role_assignment" "function_storage_blob_data_contributor" {
 }
 
 resource "azurerm_service_plan" "this" {
-  name                = "asp-${local.func_name}}"
+  name                = "asp${local.func_name}}"
   resource_group_name = data.azurerm_resource_group.this.name
   location            = data.azurerm_resource_group.this.location
   sku_name            = "FC1"
