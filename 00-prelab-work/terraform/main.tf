@@ -470,10 +470,14 @@ resource "azurerm_container_app" "this" {
         name = "TF_VAR_func_name"
         value = local.func_name
       }
-
     }
     min_replicas = 1
     max_replicas = 1
+  }
+
+  secret {
+    name = "jumpboxclientsecret"
+    value = azuread_application_password.jumpbox.value
   }
 
   ingress {
@@ -493,7 +497,82 @@ resource "azurerm_container_app" "this" {
   }
   tags = local.tags
 
-  lifecycle {
-    ignore_changes = [ secret ]
+}
+
+resource "azuread_application" "jumpbox" {
+  display_name = "jumpbox${local.func_name}"
+  owners       = [data.azurerm_client_config.current.object_id]
+  sign_in_audience = "AzureADMyOrg" 
+
+  required_resource_access {
+    resource_app_id = "00000003-0000-0000-c000-000000000000" # Microsoft Graph
+
+    resource_access {
+      id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
+      type = "Scope"
+    }
   }
+
+  web {
+    implicit_grant {
+      access_token_issuance_enabled = false
+      id_token_issuance_enabled = true
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [ web[0].redirect_uris ]
+  }
+}
+
+resource "azuread_application_password" "jumpbox" {
+  application_id = azuread_application.jumpbox.id
+}
+
+resource "azuread_application_redirect_uris" "jumpbox" {
+  application_id = azuread_application.jumpbox.id
+  type           = "Web"
+
+  redirect_uris = [
+    "https://${azurerm_container_app.this.ingress.0.fqdn}/.auth/login/aad/callback",
+  ]
+}
+
+resource "azapi_resource" "authconfig" {
+  type = "Microsoft.App/containerApps/authConfigs@2025-10-02-preview"
+  name = "current"
+  parent_id = azurerm_container_app.this.id
+  schema_validation_enabled = false
+  body = {
+    properties = {
+      globalValidation = {
+        redirectToProvider = "azureActiveDirectory"
+        unauthenticatedClientAction = "RedirectToLoginPage"
+      }
+      identityProviders = {
+        azureActiveDirectory = {
+          enabled = true
+          registration = {
+            clientId = azuread_application.jumpbox.client_id
+            clientSecretSettingName = "jumpboxclientsecret"
+            openIdIssuer = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}/v2.0"
+          }
+          validation = {
+            allowedAudiences = [
+              azuread_application.jumpbox.client_id
+            ]
+            defaultAuthorizationPolicy = {
+              allowedApplications = [
+                azuread_application.jumpbox.client_id
+              ]
+            }
+          }
+        }
+      }
+      platform={
+        enabled = true
+      }
+    }
+  }
+
 }
