@@ -4,3 +4,5 @@
 
 azure-functions
 requests
+azure-storage-blob
+azure-identity

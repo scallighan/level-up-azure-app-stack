@@ -101,6 +101,8 @@ resource "azurerm_function_app_flex_consumption" "this" {
     "AzureWebJobsStorage__credential" = "ManagedIdentity"
     "AzureWebJobsStorage__queueServiceUri" = data.azurerm_storage_account.this.primary_queue_endpoint
     "AzureWebJobsStorage__tableServiceUri" = data.azurerm_storage_account.this.primary_table_endpoint
+    "AZURE_CLIENT_ID" = azurerm_user_assigned_identity.function.client_id
+    "STORAGE_ACCOUNT_NAME" = data.azurerm_storage_account.this.name
   }
 
   site_config {
