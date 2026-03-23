@@ -131,3 +131,18 @@ resource "null_resource" "deploy_function_code" {
 
   depends_on = [azurerm_function_app_flex_consumption.this]
 }
+
+# create a holdings container and add the data/hodlings.csv file to it
+resource "azurerm_storage_container" "holdings" {
+  name                  = "holdings"
+  storage_account_id = data.azurerm_storage_account.this.id
+  container_access_type = "private"
+} 
+
+resource "azurerm_storage_blob" "holdings_csv" {
+  name                   = "holdings.csv"
+  storage_account_name  = data.azurerm_storage_account.this.name
+  storage_container_name = azurerm_storage_container.holdings.name
+  type                   = "Block"
+  source                 = "./data/holdings.csv"
+}
