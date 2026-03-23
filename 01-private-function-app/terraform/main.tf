@@ -108,10 +108,16 @@ resource "azurerm_function_app_flex_consumption" "this" {
   tags = local.tags
 }
 
+data "archive_file" "function_zip"  {
+  type        = "zip"
+  source_dir  = "../func"
+  output_path = "${path.module}/function.zip"
+}
+
 # exec processor to run func azure functionapp publish $FUNC_NAME --python
 resource "null_resource" "deploy_function_code" {
   provisioner "local-exec" {
-    command = "cd ../func && func azure functionapp publish ${azurerm_function_app_flex_consumption.this.name} --python"
+    command = "az functionapp deployment source config-zip --name ${azurerm_function_app_flex_consumption.this.name} --resource-group ${data.azurerm_resource_group.this.name} --src ${data.archive_file.function_zip.output_path}"
   }
 
   depends_on = [azurerm_function_app_flex_consumption.this]
