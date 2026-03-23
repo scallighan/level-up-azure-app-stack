@@ -125,8 +125,10 @@ data "archive_file" "function_zip"  {
   output_path = "${path.module}/function.zip"
 }
 
-# exec processor to run func azure functionapp publish $FUNC_NAME --python
 resource "null_resource" "deploy_function_code" {
+  triggers = {
+    index = "${timestamp()}"
+  }
   provisioner "local-exec" {
     command = "az functionapp deployment source config-zip --name ${azurerm_function_app_flex_consumption.this.name} --resource-group ${data.azurerm_resource_group.this.name} --src ${data.archive_file.function_zip.output_path}"
   }
