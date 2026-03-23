@@ -96,10 +96,11 @@ resource "azurerm_function_app_flex_consumption" "this" {
 
   app_settings = {
     "AzureWebJobsStorage" = ""
-    "AzureWebJobsStorage__accountName" = data.azurerm_storage_account.this.name
-    "AzureWebJobsStorage__containerName" = azurerm_storage_container.this.name
-    "AzureWebJobsStorage__authenticationType" = "UserAssignedIdentity"
-    "AzureWebJobsStorage__userAssignedIdentityId" = azurerm_user_assigned_identity.function.id
+    "AzureWebJobsStorage__blobServiceUri" = data.azurerm_storage_account.this.primary_blob_endpoint
+    "AzureWebJobsStorage__clientId" = azurerm_user_assigned_identity.function.client_id
+    "AzureWebJobsStorage__credential" = "ManagedIdentity"
+    "AzureWebJobsStorage__queueServiceUri" = data.azurerm_storage_account.this.primary_queue_endpoint
+    "AzureWebJobsStorage__tableServiceUri" = data.azurerm_storage_account.this.primary_table_endpoint
   }
 
   site_config {
