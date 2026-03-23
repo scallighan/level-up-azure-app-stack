@@ -94,6 +94,14 @@ resource "azurerm_function_app_flex_consumption" "this" {
 
   webdeploy_publish_basic_authentication_enabled = false
 
+  app_settings = {
+    "AzureWebJobsStorage" = ""
+    "AzureWebJobsStorage__accountName" = data.azurerm_storage_account.this.name
+    "AzureWebJobsStorage__containerName" = azurerm_storage_container.this.name
+    "AzureWebJobsStorage__authenticationType" = "UserAssignedIdentity"
+    "AzureWebJobsStorage__userAssignedIdentityId" = azurerm_user_assigned_identity.function.id
+  }
+
   site_config {
      vnet_route_all_enabled = true
   }
