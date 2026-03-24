@@ -154,7 +154,7 @@ resource "azurerm_function_app_flex_consumption" "this" {
       default_provider = "azureactivedirectory"
       excluded_paths = ["/www/HttpExample"]
       active_directory_v2 {
-        client_id = azuread_application.function.application_id
+        client_id = azuread_application.function.client_id
         tenant_auth_endpoint = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}/v2.0/"
 
       }
