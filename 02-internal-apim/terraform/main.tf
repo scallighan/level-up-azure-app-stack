@@ -143,7 +143,7 @@ resource "azurerm_private_dns_a_record" "apim" {
   zone_name           = azurerm_private_dns_zone.apim.name
   resource_group_name = data.azurerm_resource_group.this.name
   ttl                 = 300
-  records             = [azurerm_api_management.apim.gateway_url]
+  records             = [azurerm_api_management.apim.private_ip_addresses[0]]
 }
 
 # add an Echo API to APIM for testing
