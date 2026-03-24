@@ -42,6 +42,11 @@ data "azurerm_private_dns_zone" "openai" {
   resource_group_name = var.resource_group_name
 }
 
+data "azurerm_private_dns_zone" "azurewebsites" {
+  name                = "privatelink.azurewebsites.net"
+  resource_group_name = var.resource_group_name
+}
+
 data "azurerm_subnet" "pe" {
   name                 = "snet-pe-${var.func_name}-${local.loc_for_naming}"
   resource_group_name  = var.resource_group_name

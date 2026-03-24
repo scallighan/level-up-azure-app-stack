@@ -151,3 +151,34 @@ resource "azurerm_storage_blob" "holdings_csv" {
   type                   = "Block"
   source                 = "./data/holdings.csv"
 }
+
+# create a private endpoint for the Azure Function
+resource "azurerm_private_endpoint" "function" {
+  name                = "pe-function-${local.func_name}"
+  resource_group_name = data.azurerm_resource_group.this.name
+  location            = data.azurerm_resource_group.this.location
+  subnet_id           = data.azurerm_subnet.pe.id
+
+  private_service_connection {
+    name                           = "psc-function-${local.func_name}"
+    is_manual_connection            = false
+    private_connection_resource_id   = azurerm_function_app_flex_consumption.this.id
+    subresource_names               = ["sites"]
+  }
+
+  private_dns_zone_group {
+    name = "pdzg-function-${local.func_name}"
+    private_dns_zone_ids = [ data.azurerm_private_dns_zone.azurewebsites.id ]
+
+  }
+  tags = local.tags
+}
+
+# also add the scm endpoint to the private dns zone
+resource "azurerm_dns_a_record" "function_scm" {
+  name                = "${azurerm_function_app_flex_consumption.this.name}.scm"
+  zone_name           = data.azurerm_private_dns_zone.azurewebsites.name
+  resource_group_name = data.azurerm_resource_group.this.name
+  ttl                 = 300
+  records             = [azurerm_private_endpoint.function.private_service_connection[0].private_ip_address]
+}
