@@ -101,6 +101,10 @@ resource "azurerm_api_management" "apim" {
     subnet_id = azurerm_subnet.apim.id
   }
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   sku_name = "Developer_1"
   tags = local.tags
 }
@@ -130,5 +134,67 @@ resource "azurerm_monitor_diagnostic_setting" "apim" {
   enabled_metric {
     category = "AllMetrics"
   }
+
+}
+
+# add APIM internal IP to private DNS zone
+resource "azurerm_private_dns_a_record" "apim" {
+  name                = azurerm_api_management.apim.name
+  zone_name           = azurerm_private_dns_zone.apim.name
+  resource_group_name = data.azurerm_resource_group.this.name
+  ttl                 = 300
+  records             = [azurerm_api_management.apim.gateway_url]
+}
+
+# add an Echo API to APIM for testing
+resource "azurerm_api_management_api" "echo" {
+  name                = "echo-api"
+  resource_group_name = data.azurerm_resource_group.this.name
+  api_management_name = azurerm_api_management.apim.name
+  revision            = "1"
+  display_name        = "Echo API"
+  path                = "echo"
+  protocols           = ["https"]
+}
+
+resource "azurerm_api_management_api_operation" "echo" {
+  operation_id        = "echo"
+  api_name            = azurerm_api_management_api.echo.name
+  api_management_name = azurerm_api_management.apim.name
+  resource_group_name = data.azurerm_resource_group.this.name
+  display_name        = "Echo"
+  method              = "GET"
+  url_template        = "/"
+}
+
+# add a policy to the Echo API to return the incoming request as the response
+resource "azurerm_api_management_api_operation_policy" "echo" {
+  api_name            = azurerm_api_management_api.echo.name
+  operation_id        = azurerm_api_management_api_operation.echo.operation_id
+  api_management_name = azurerm_api_management.apim.name
+  resource_group_name = data.azurerm_resource_group.this.name
+  xml_content         = <<XML
+<policies>
+    <inbound>
+        <base />
+        <return-response>
+            <set-status code="200" reason="OK" />
+            <set-body>@{
+                var headers = context.Request.Headers
+                                .Where(h => h.Key != "A" && h.Key != "B" && h.Key != "C")
+                                .Select(h => string.Format("{0}: {1}", h.Key, String.Join(", ", h.Value)))
+                                .ToArray<string>(); 
+                return String.Join(" ||| ", headers);
+            }</set-body>
+        </return-response>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+</policies>
+XML
 
 }
