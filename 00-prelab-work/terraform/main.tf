@@ -231,6 +231,20 @@ resource "azurerm_private_dns_zone_virtual_network_link" "openai" {
   virtual_network_id    = azurerm_virtual_network.this.id
 }
 
+#privatelink.azurewebsites.net
+resource "azurerm_private_dns_zone" "azurewebsites" {
+  name                = "privatelink.azurewebsites.net"
+  resource_group_name = azurerm_resource_group.this.name
+  tags = local.tags
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "azurewebsites" {
+  name                  = "azurewebsites"
+  resource_group_name   = azurerm_resource_group.this.name
+  private_dns_zone_name = azurerm_private_dns_zone.azurewebsites.name
+  virtual_network_id    = azurerm_virtual_network.this.id
+}
+
 #privatelink.vaultcore.azure.net
 resource "azurerm_private_dns_zone" "keyvault" {
   name                = "privatelink.vaultcore.azure.net"
