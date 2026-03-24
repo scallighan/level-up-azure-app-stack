@@ -65,45 +65,6 @@ resource "azurerm_role_assignment" "function_storage_blob_data_contributor" {
   principal_id         = azurerm_user_assigned_identity.function.principal_id
 }
 
-resource "azuread_application" "function" {
-  display_name = "function${local.func_name}"
-  owners       = [data.azurerm_client_config.current.object_id]
-  sign_in_audience = "AzureADMyOrg" 
-
-  required_resource_access {
-    resource_app_id = "00000003-0000-0000-c000-000000000000" # Microsoft Graph
-
-    resource_access {
-      id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
-      type = "Scope"
-    }
-  }
-
-  web {
-    implicit_grant {
-      access_token_issuance_enabled = false
-      id_token_issuance_enabled = true
-    }
-  }
-
-  lifecycle {
-    ignore_changes = [ web[0].redirect_uris ]
-  }
-}
-
-resource "azuread_application_password" "function" {
-  application_id = azuread_application.function.id
-}
-
-resource "azuread_application_redirect_uris" "function" {
-  application_id = azuread_application.function.id
-  type           = "Web"
-
-  redirect_uris = [
-    "https://${azurerm_function_app_flex_consumption.this.default_hostname}/.auth/login/aad/callback",
-  ]
-}
-
 resource "azurerm_service_plan" "this" {
   name                = "asp-${local.func_name}"
   resource_group_name = data.azurerm_resource_group.this.name
@@ -154,9 +115,8 @@ resource "azurerm_function_app_flex_consumption" "this" {
       default_provider = "azureactivedirectory"
       excluded_paths = ["/www/HttpExample"]
       active_directory_v2 {
-        client_id = azuread_application.function.client_id
+        client_id = data.azuread_application.jumpbox.client_id
         tenant_auth_endpoint = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}/v2.0/"
-
       }
       login {
         
