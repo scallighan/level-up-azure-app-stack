@@ -134,7 +134,7 @@ resource "null_resource" "deploy_function_code" {
     command = "az functionapp deployment source config-zip --name ${azurerm_function_app_flex_consumption.this.name} --resource-group ${data.azurerm_resource_group.this.name} --src ${data.archive_file.function_zip.output_path}"
   }
 
-  depends_on = [azurerm_function_app_flex_consumption.this]
+  depends_on = [azurerm_function_app_flex_consumption.this, azurerm_dns_a_record.function_scm]
 }
 
 # create a holdings container and add the data/hodlings.csv file to it
@@ -172,13 +172,4 @@ resource "azurerm_private_endpoint" "function" {
 
   }
   tags = local.tags
-}
-
-# also add the scm endpoint to the private dns zone
-resource "azurerm_dns_a_record" "function_scm" {
-  name                = "${azurerm_function_app_flex_consumption.this.name}.scm"
-  zone_name           = data.azurerm_private_dns_zone.azurewebsites.name
-  resource_group_name = data.azurerm_resource_group.this.name
-  ttl                 = 300
-  records             = [azurerm_private_endpoint.function.private_service_connection[0].private_ip_address]
 }
