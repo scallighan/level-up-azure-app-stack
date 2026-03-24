@@ -54,3 +54,8 @@ data "azurerm_storage_account" "this" {
   name                = "sa${local.func_name}"
   resource_group_name = data.azurerm_resource_group.this.name
 }
+
+data "azurerm_log_analytics_workspace" "this" {
+  name                = "levelup-${data.azurerm_client_config.current.subscription_id}-${local.loc_short}"
+  resource_group_name = data.azurerm_resource_group.this.name
+}
