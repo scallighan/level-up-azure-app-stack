@@ -54,7 +54,3 @@ data "azurerm_storage_account" "this" {
   name                = "sa${local.func_name}"
   resource_group_name = data.azurerm_resource_group.this.name
 }
-
-data "azuread_application" "jumpbox" {
-  display_name = "jumpbox${local.func_name}"
-}

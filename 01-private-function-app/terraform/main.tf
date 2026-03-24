@@ -110,19 +110,6 @@ resource "azurerm_function_app_flex_consumption" "this" {
      vnet_route_all_enabled = true
   }
 
-  auth_settings_v2 {
-      auth_enabled = true
-      default_provider = "azureactivedirectory"
-      excluded_paths = ["/www/HttpExample"]
-      active_directory_v2 {
-        client_id = data.azuread_application.jumpbox.client_id
-        tenant_auth_endpoint = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}/v2.0/"
-      }
-      login {
-        
-      }
-  }
-
   identity {
     type = "UserAssigned"
     identity_ids = [

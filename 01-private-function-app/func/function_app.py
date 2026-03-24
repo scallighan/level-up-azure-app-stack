@@ -35,7 +35,7 @@ def HttpExample(req: func.HttpRequest) -> func.HttpResponse:
     )
 
 @app.function_name(name="ListHoldings")
-@app.route(route="holdings", auth_level=func.AuthLevel.ANONYMOUS)
+@app.route(route="holdings", auth_level=func.AuthLevel.FUNCTION)
 def ListHoldings(req: func.HttpRequest) -> func.HttpResponse:
     # read the holdings.csv file from azure blob storage container and return the contents as a json response
     logging.info('Python HTTP trigger function ListHoldings processed a request.')
