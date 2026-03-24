@@ -45,8 +45,19 @@ def ListHoldings(req: func.HttpRequest) -> func.HttpResponse:
     blob_client = container_client.get_blob_client("holdings.csv")
     blob_data = blob_client.download_blob().readall()
     holdings = [line.split(",") for line in blob_data.decode("utf-8").split("\n") if line]
+    holdings_json = []
+    for holding in holdings[1:]:
+        holdings_json.append({
+            "date": holding[1],
+            "ticker": holding[2],
+            "buy_or_sell": holding[3],
+            "shares": holding[4],
+            "buy_price": holding[5],
+            "sell_price": holding[6],
+            "position": holding[7]
+        })
     return func.HttpResponse(
-        json.dumps(holdings),
+        json.dumps(holdings_json),
         mimetype="application/json",
         status_code=200
     )
