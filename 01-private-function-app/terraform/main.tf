@@ -126,16 +126,16 @@ data "archive_file" "function_zip"  {
   output_path = "${path.module}/function.zip"
 }
 
-resource "null_resource" "deploy_function_code" {
-  triggers = {
-    index = "${timestamp()}"
-  }
-  provisioner "local-exec" {
-    command = "az functionapp deployment source config-zip --name ${azurerm_function_app_flex_consumption.this.name} --resource-group ${data.azurerm_resource_group.this.name} --src ${data.archive_file.function_zip.output_path}"
-  }
+# resource "null_resource" "deploy_function_code" {
+#   triggers = {
+#     index = "${timestamp()}"
+#   }
+#   provisioner "local-exec" {
+#     command = "az functionapp deployment source config-zip --name ${azurerm_function_app_flex_consumption.this.name} --resource-group ${data.azurerm_resource_group.this.name} --src ${data.archive_file.function_zip.output_path}"
+#   }
 
-  depends_on = [azurerm_function_app_flex_consumption.this, azurerm_private_endpoint.function]
-}
+#   depends_on = [azurerm_function_app_flex_consumption.this, azurerm_private_endpoint.function]
+# }
 
 # create a holdings container and add the data/hodlings.csv file to it
 resource "azurerm_storage_container" "holdings" {
@@ -181,7 +181,7 @@ resource "azurerm_mssql_server" "this" {
   location                     = "westus2" # capacity
   version                      = "12.0"
   azuread_administrator {
-    login_username              = split("/", data.azurerm_client_config.current.id)[length(split("/", data.azurerm_client_config.current.id))-1]
+    login_username              = "uai-${local.func_name}"
     object_id                   = data.azurerm_client_config.current.object_id
     azuread_authentication_only = true
   }
