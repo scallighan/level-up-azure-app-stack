@@ -174,31 +174,16 @@ resource "azurerm_private_endpoint" "function" {
   tags = local.tags
 }
 
-# generate a random password for the Azure SQL Database administrator
-resource "random_password" "sql_admin" {
-  length  = 16
-  special = true
-}
-
-# store in keyvault
-resource "azurerm_key_vault_secret" "sql_admin_password" {
-  name         = "sql-admin-password"
-  value        = random_password.sql_admin.result
-  key_vault_id = data.azurerm_key_vault.this.id
-}
-
 # add an Azure SQL Database and preload it with data
 resource "azurerm_mssql_server" "this" {
   name                         = "sql-${local.func_name}"
   resource_group_name          = data.azurerm_resource_group.this.name
   location                     = "westus2" # capacity
   version                      = "12.0"
-  administrator_login          = "sqladmin"
-  administrator_login_password = random_password.sql_admin.result
-
   azuread_administrator {
-    login_username = split("/", data.azurerm_client_config.current.id)[length(split("/", data.azurerm_client_config.current.id))-1]
-    object_id      = data.azurerm_client_config.current.object_id
+    login_username              = split("/", data.azurerm_client_config.current.id)[length(split("/", data.azurerm_client_config.current.id))-1]
+    object_id                   = data.azurerm_client_config.current.object_id
+    azuread_authentication_only = true
   }
 
   tags = local.tags

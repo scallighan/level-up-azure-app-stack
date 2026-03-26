@@ -460,7 +460,7 @@ resource "azurerm_user_assigned_identity" "this" {
 
 resource "azurerm_role_assignment" "containerapptokv" {
   scope                = azurerm_key_vault.kv.id
-  role_definition_name = "Key Vault Secrets User"
+  role_definition_name = "Key Vault Secrets Officer"
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
 
@@ -481,6 +481,12 @@ resource "azurerm_role_assignment" "azure_ai_user" {
   scope                = azurerm_resource_group.this.id
   role_definition_name = "Azure AI User"
   principal_id         = azurerm_user_assigned_identity.this.principal_id 
+}
+
+resource "azurerm_role_assignment" "contributor" {
+  scope                = azurerm_resource_group.this.id
+  role_definition_name = "Contributor"
+  principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
 
 resource "azuread_directory_role" "appadmin" {
