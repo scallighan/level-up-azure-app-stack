@@ -173,3 +173,22 @@ resource "azurerm_private_endpoint" "function" {
   }
   tags = local.tags
 }
+
+resource "azuread_application" "function" {
+  display_name = "func${local.func_name}"
+  owners       = [data.azurerm_client_config.current.object_id]
+  sign_in_audience = "AzureADMyOrg" 
+
+  required_resource_access {
+    resource_app_id = "00000003-0000-0000-c000-000000000000" # Microsoft Graph
+
+    resource_access {
+      id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
+      type = "Scope"
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [ web[0].redirect_uris ]
+  }
+}
