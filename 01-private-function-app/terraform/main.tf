@@ -174,3 +174,62 @@ resource "azurerm_private_endpoint" "function" {
   tags = local.tags
 }
 
+# generate a random password for the Azure SQL Database administrator
+resource "random_password" "sql_admin" {
+  length  = 16
+  special = true
+}
+
+# store in keyvault
+resource "azurerm_key_vault_secret" "sql_admin_password" {
+  name         = "sql-admin-password"
+  value        = random_password.sql_admin.result
+  key_vault_id = data.azurerm_key_vault.this.id
+}
+
+# add an Azure SQL Database and preload it with data
+resource "azurerm_mssql_server" "this" {
+  name                         = "sql-${local.func_name}"
+  resource_group_name          = data.azurerm_resource_group.this.name
+  location                     = "westus2" # capacity
+  version                      = "12.0"
+  administrator_login          = "sqladmin"
+  administrator_login_password = random_password.sql_admin.result
+
+  azuread_administrator {
+    login_username = split("/", data.azurerm_client_config.current.id)[length(split("/", data.azurerm_client_config.current.id))-1]
+    object_id      = data.azurerm_client_config.current.object_id
+  }
+
+  tags = local.tags
+}
+
+resource "azurerm_mssql_database" "this" {
+  name                = "db-${local.func_name}"
+  server_id           = azurerm_mssql_server.this.id
+  sku_name            = "Basic"
+  collation           = "SQL_Latin1_General_CP1_CI_AS"
+  max_size_gb        = 2
+
+  tags = local.tags
+}
+
+# create a private endpoint for the Azure SQL Database
+resource "azurerm_private_endpoint" "sql" {
+  name                = "pe-sql-${local.func_name}"
+  resource_group_name = data.azurerm_resource_group.this.name
+  location            = data.azurerm_resource_group.this.location
+  subnet_id           = data.azurerm_subnet.pe.id
+  private_service_connection {
+    name                           = "psc-sql-${local.func_name}"
+    is_manual_connection            = false
+    private_connection_resource_id   = azurerm_mssql_server.this.id
+    subresource_names               = ["sqlServer"]
+  }
+
+  private_dns_zone_group {
+    name = "pdzg-sql-${local.func_name}"
+    private_dns_zone_ids = [ data.azurerm_private_dns_zone.sql.id ]
+  }
+  tags = local.tags
+}

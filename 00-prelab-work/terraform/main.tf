@@ -245,6 +245,20 @@ resource "azurerm_private_dns_zone_virtual_network_link" "azurewebsites" {
   virtual_network_id    = azurerm_virtual_network.this.id
 }
 
+#privatelink.database.windows.net
+resource "azurerm_private_dns_zone" "sql" {
+  name                = "privatelink.database.windows.net"
+  resource_group_name = azurerm_resource_group.this.name
+  tags = local.tags
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "sql" {
+  name                  = "sql"
+  resource_group_name   = azurerm_resource_group.this.name
+  private_dns_zone_name = azurerm_private_dns_zone.sql.name
+  virtual_network_id    = azurerm_virtual_network.this.id
+}
+
 #privatelink.vaultcore.azure.net
 resource "azurerm_private_dns_zone" "keyvault" {
   name                = "privatelink.vaultcore.azure.net"

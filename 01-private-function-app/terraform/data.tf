@@ -47,6 +47,11 @@ data "azurerm_private_dns_zone" "azurewebsites" {
   resource_group_name = var.resource_group_name
 }
 
+data "azurerm_private_dns_zone" "sql" {
+  name                = "privatelink.database.windows.net"
+  resource_group_name = var.resource_group_name
+}
+
 data "azurerm_subnet" "pe" {
   name                 = "snet-pe-${var.func_name}-${local.loc_for_naming}"
   resource_group_name  = var.resource_group_name
@@ -57,5 +62,10 @@ data "azurerm_client_config" "current" {}
 
 data "azurerm_storage_account" "this" {
   name                = "sa${local.func_name}"
+  resource_group_name = data.azurerm_resource_group.this.name
+}
+
+data "azurerm_key_vault" "this" {
+  name                = "kv-${local.func_name}"
   resource_group_name = data.azurerm_resource_group.this.name
 }
