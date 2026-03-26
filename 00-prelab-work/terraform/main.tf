@@ -456,18 +456,6 @@ resource "azurerm_role_assignment" "reader" {
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
 
-resource "azurerm_role_assignment" "contributor" {
-  scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
-  role_definition_name = "Contributor"
-  principal_id         = azurerm_user_assigned_identity.this.principal_id
-}
-
-resource "azurerm_role_assignment" "owner" {
-  scope                = azurerm_resource_group.this.id
-  role_definition_name = "Owner"
-  principal_id         = azurerm_user_assigned_identity.this.principal_id 
-}
-
 resource "azurerm_role_assignment" "blob" {
   scope                = azapi_resource.storage_account.id
   role_definition_name = "Storage Blob Data Contributor"
@@ -481,6 +469,14 @@ resource "azurerm_role_assignment" "azure_ai_user" {
   principal_id         = azurerm_user_assigned_identity.this.principal_id 
 }
 
+resource "azuread_directory_role" "appadmin" {
+  display_name = "Application Administrator"
+}
+
+resource "azuread_directory_role_assignment" "appadmin" {
+  role_id             = azuread_directory_role.appadmin.template_id
+  principal_object_id = azurerm_user_assigned_identity.this.principal_id 
+}
 
 resource "azurerm_container_app_environment" "this" {
   name                       = "ace-${local.func_name}"

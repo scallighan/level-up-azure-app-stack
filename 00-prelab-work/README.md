@@ -11,6 +11,11 @@ Create the following resources
 * Container App Environment
 * Azure Container App
 
+## PIM to global admin
+* In the Azure Portal, navigate to `Privileged Identity Management`
+* Under `Activate -> Microsoft Entral Roles` find `Global Administrator` and under action select `Activate`
+* Provide a Reason and then click Activate in the lower right
+
 ## Terraform
 
 Change directory into the terraform folder for this lab
