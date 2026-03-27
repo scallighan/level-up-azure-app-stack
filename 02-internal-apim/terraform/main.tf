@@ -209,7 +209,7 @@ resource "azurerm_api_management_api" "dataaccess" {
   display_name        = "Data Access API"
   path                = "dataaccess"
   protocols           = ["https"]
-  service_url         = "https://${data.azurerm_function_app.this.default_hostname}"
+  service_url         = "https://${data.azurerm_function_app_flex_consumption.this.default_hostname}"
 }
 
 resource "azurerm_api_management_api_operation" "hello" {
