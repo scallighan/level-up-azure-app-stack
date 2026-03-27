@@ -198,3 +198,47 @@ resource "azurerm_api_management_api_operation_policy" "echo" {
 XML
 
 }
+
+
+# add a Data Access API to APIM for testing
+resource "azurerm_api_management_api" "dataaccess" {
+  name                = "dataaccess-api"
+  resource_group_name = data.azurerm_resource_group.this.name
+  api_management_name = azurerm_api_management.apim.name
+  revision            = "1"
+  display_name        = "Data Access API"
+  path                = "dataaccess"
+  protocols           = ["https"]
+  service_url         = "https://${data.azurerm_function_app.this.default_hostname}"
+}
+
+resource "azurerm_api_management_api_operation" "hello" {
+  operation_id        = "hello"
+  api_name            = azurerm_api_management_api.dataaccess.name
+  api_management_name = azurerm_api_management.apim.name
+  resource_group_name = data.azurerm_resource_group.this.name
+  display_name        = "Say Hello"
+  method              = "GET"
+  url_template        = "/"
+}
+
+resource "azurerm_api_management_api_operation_policy" "hello" {
+  api_name            = azurerm_api_management_api.dataaccess.name
+  operation_id        = azurerm_api_management_api_operation.hello.operation_id
+  api_management_name = azurerm_api_management.apim.name
+  resource_group_name = data.azurerm_resource_group.this.name
+  xml_content         = <<XML
+<policies>
+    <inbound>
+        <base />
+        <rewrite-uri template="/www/HttpExample" />
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+</policies>
+XML
+}
