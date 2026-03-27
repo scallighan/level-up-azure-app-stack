@@ -195,6 +195,7 @@ resource "azurerm_mssql_server" "this" {
     azuread_authentication_only = true
   }
 
+  primary_user_assigned_identity_id = data.azurerm_user_assigned_identity.this.id
   identity {
     type = "UserAssigned"
     identity_ids = [
