@@ -1,3 +1,4 @@
+cd terraform
 serverName=$(terraform output -raw sql_server_name)
 databaseName=$(terraform output -raw sql_database_name)
 resourceGroupName=$(terraform output -raw resource_group_name)
