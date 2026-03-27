@@ -60,7 +60,7 @@ data "azurerm_log_analytics_workspace" "this" {
   resource_group_name = data.azurerm_resource_group.this.name
 }
 
-data "azurerm_function_app_flex_consumption" "this" {
+data "azurerm_linux_function_app" "this" {
   name                = "func-${local.func_name}"
   resource_group_name = data.azurerm_resource_group.this.name
 }
