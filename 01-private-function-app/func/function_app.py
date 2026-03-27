@@ -433,7 +433,7 @@ def GetAccountStocksByHolderName(req: func.HttpRequest) -> func.HttpResponse:
 
     #  query AccountStocks and it should join the stock_id and purchase_order_id
     query = """
-    SELECT AccountStocks.*, Stocks.*, PurchaseOrders.*
+    SELECT AccountStocks.*, Stocks.*, PurchaseOrders.*, OrderStatus*, PaymentMethods.*
     FROM AccountStocks
     JOIN Stocks ON AccountStocks.StockId = Stocks.Id
     JOIN PurchaseOrders ON AccountStocks.PurchaseOrderId = PurchaseOrders.PurchaseOrderId
