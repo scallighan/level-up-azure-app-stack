@@ -391,6 +391,7 @@ def CrudDelete(req: func.HttpRequest) -> func.HttpResponse:
 
 # look up account by AccountHolderFullName and return the Account model
 def _getAccountByHolderName(holder_name: str) -> Accounts:
+    print(f"Looking up account for holder name: {holder_name}")
     query = "SELECT * FROM Accounts WHERE AccountHolderFullName = ?"
 
     with _get_sql_connection() as conn:
@@ -415,7 +416,7 @@ def _getAccountByHolderName(holder_name: str) -> Accounts:
 @app.function_name(name="GetAccountByHolderName")
 @app.route(route="account/byholder/{holder_name}", methods=["GET"], auth_level=func.AuthLevel.FUNCTION)
 def GetAccountByHolderName(req: func.HttpRequest) -> func.HttpResponse:
-    holder_name = req.route_params.get("holder_name")
+    holder_name = req.route_params.get("holder_name")    
     account = _getAccountByHolderName(holder_name)
     if not account:
         return _json_response({"error": "Not found."}, status_code=404)

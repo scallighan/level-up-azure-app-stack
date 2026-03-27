@@ -5,7 +5,7 @@ from typing import Optional
 from uuid import UUID
 
 
-@dataclass(slots=True)
+@dataclass
 class AccountStocks:
 	id: Optional[int] = None
 	account_id: Optional[int] = None
@@ -21,7 +21,7 @@ class AccountStocks:
 	stock_symbol: Optional[str] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class Beneficiaries:
 	id: Optional[int] = None
 	account_id: Optional[int] = None
@@ -32,7 +32,7 @@ class Beneficiaries:
 	modified_date: Optional[datetime] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class Currencies:
 	id: Optional[int] = None
 	code: Optional[str] = None
@@ -40,7 +40,7 @@ class Currencies:
 	is_active: Optional[bool] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class OrderStatus:
 	status_id: Optional[int] = None
 	status_name: Optional[str] = None
@@ -48,7 +48,7 @@ class OrderStatus:
 	modified_date: Optional[datetime] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class PaymentMethods:
 	id: Optional[int] = None
 	account_id: Optional[int] = None
@@ -61,7 +61,7 @@ class PaymentMethods:
 	modified_date: Optional[datetime] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class PaymentMethodTypes:
 	id: Optional[int] = None
 	code: Optional[str] = None
@@ -69,7 +69,7 @@ class PaymentMethodTypes:
 	is_active: Optional[bool] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class Payments:
 	payment_id: Optional[int] = None
 	description: Optional[str] = None
@@ -83,7 +83,7 @@ class Payments:
 	created_date: Optional[datetime] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class PurchaseOrders:
 	purchase_order_id: Optional[int] = None
 	purchase_order_number: Optional[str] = None
@@ -101,7 +101,7 @@ class PurchaseOrders:
 	modified_date: Optional[datetime] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class Stocks:
 	id: Optional[int] = None
 	stock_symbol: Optional[str] = None
@@ -110,7 +110,7 @@ class Stocks:
 	company_name: Optional[str] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class Transactions:
 	id: Optional[UUID] = None
 	description: Optional[str] = None
@@ -124,7 +124,7 @@ class Transactions:
 	created_date: Optional[datetime] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class TransactionTypes:
 	id: Optional[int] = None
 	code: Optional[str] = None
@@ -132,7 +132,7 @@ class TransactionTypes:
 	is_active: Optional[bool] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class User:
 	user_name: Optional[str] = None
 	created_date: Optional[datetime] = None
@@ -140,7 +140,7 @@ class User:
 	active: Optional[int] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class DatabaseFirewallRules:
 	id: Optional[int] = None
 	name: Optional[str] = None
@@ -150,7 +150,7 @@ class DatabaseFirewallRules:
 	modify_date: Optional[datetime] = None
 
 
-@dataclass(slots=True)
+@dataclass
 class Accounts:
 	id: Optional[int] = None
 	user_name: Optional[str] = None
