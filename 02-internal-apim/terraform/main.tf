@@ -102,7 +102,10 @@ resource "azurerm_api_management" "apim" {
   }
 
   identity {
-    type = "SystemAssigned"
+    type = "UserAssigned"
+    identity_ids = [
+      data.azurerm_user_assigned_identity.this.id
+    ]
   }
 
   sku_name = "Developer_1"
@@ -242,3 +245,4 @@ resource "azurerm_api_management_api_operation_policy" "hello" {
 </policies>
 XML
 }
+
