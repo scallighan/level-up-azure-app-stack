@@ -18,3 +18,7 @@ output "bacpac_storage_uri" {
 output "this_managed_identity_id" {
   value = data.azurerm_user_assigned_identity.this.id
 }
+
+output "resource_group_name" {
+  value = data.azurerm_resource_group.this.name
+}
