@@ -10,3 +10,11 @@ output "sql_server_name" {
 output "sql_database_name" {
   value = azurerm_mssql_database.this.name
 }
+
+output "bacpac_storage_uri" {
+  value = azurerm_storage_blob.bacpac.url
+}
+
+output "this_managed_identity_id" {
+  value = data.azurerm_user_assigned_identity.this.id
+}

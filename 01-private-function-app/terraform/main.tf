@@ -152,6 +152,14 @@ resource "azurerm_storage_blob" "holdings_csv" {
   source                 = "./data/holdings.csv"
 }
 
+resource "azurerm_storage_blob" "bacpac" {
+  name                  = "FinancialAdvising.bacpac"
+  storage_account_name  = data.azurerm_storage_account.this.name
+  storage_container_name = azurerm_storage_container.holdings.name
+  type                   = "Block"
+  source                 = "./data/FinancialAdvising.bacpac"
+}
+
 # create a private endpoint for the Azure Function
 resource "azurerm_private_endpoint" "function" {
   name                = "pe-function-${local.func_name}"
