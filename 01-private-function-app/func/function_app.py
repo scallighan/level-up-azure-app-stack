@@ -436,7 +436,7 @@ def GetAccountStocksByHolderName(req: func.HttpRequest) -> func.HttpResponse:
     SELECT AccountStocks.*, Stocks.*, PurchaseOrders.*
     FROM AccountStocks
     JOIN Stocks ON AccountStocks.StockId = Stocks.Id
-    JOIN PurchaseOrders ON AccountStocks.PurchaseOrderId = PurchaseOrders.Id
+    JOIN PurchaseOrders ON AccountStocks.PurchaseOrderId = PurchaseOrders.PurchaseOrderId
     WHERE AccountStocks.AccountId = ?
     """
 
