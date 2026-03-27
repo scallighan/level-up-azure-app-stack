@@ -182,7 +182,7 @@ resource "azurerm_mssql_server" "this" {
   version                      = "12.0"
   azuread_administrator {
     login_username              = data.azurerm_user_assigned_identity.this.name
-    object_id                   = data.azurerm_user_assigned_identity.this.principal_id
+    object_id                   = data.azurerm_user_assigned_identity.this.client_id
     azuread_authentication_only = true
   }
 
