@@ -110,6 +110,7 @@ resource "azurerm_function_app_flex_consumption" "this" {
 
   site_config {
      vnet_route_all_enabled = true
+     application_insights_connection_string = data.azurerm_application_insights.this.connection_string
   }
 
   identity {

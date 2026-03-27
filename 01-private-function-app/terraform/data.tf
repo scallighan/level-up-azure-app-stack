@@ -74,3 +74,8 @@ data "azurerm_user_assigned_identity" "this" {
   name                = "uai-${local.func_name}"
   resource_group_name = data.azurerm_resource_group.this.name
 }
+
+data "azurerm_application_insights" "this" {
+  name                = "${local.func_name}-insights"
+  resource_group_name = data.azurerm_resource_group.this.name
+}
