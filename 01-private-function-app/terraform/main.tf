@@ -141,6 +141,18 @@ resource "null_resource" "deploy_function_code" {
   depends_on = [azurerm_function_app_flex_consumption.this, azurerm_private_endpoint.function]
 }
 
+# Add the function app host key to keyvault
+data "azurerm_function_app_host_keys" "this" {
+  name                = azurerm_function_app_flex_consumption.this.name
+  resource_group_name = data.azurerm_resource_group.this.name
+}
+
+resource "azurerm_key_vault_secret" "function_host_key" {
+  name         = "function-host-key"
+  value        = data.azurerm_function_app_host_keys.this.default_function_key
+  key_vault_id = data.azurerm_key_vault.this.id
+}
+
 # create a holdings container and add the data/hodlings.csv file to it
 resource "azurerm_storage_container" "holdings" {
   name                  = "holdings"
