@@ -389,3 +389,62 @@ def CrudDelete(req: func.HttpRequest) -> func.HttpResponse:
             return _json_response({"error": "Not found."}, status_code=404)
         return _json_response({"message": "Deleted.", "rows_affected": affected})
 
+# look up account by AccountHolderFullName and return the Account model
+def _getAccountByHolderName(holder_name: str) -> Accounts:
+    query = "SELECT * FROM Accounts WHERE AccountHolderFullName = ?"
+
+    with _get_sql_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (holder_name,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+        account = Accounts(
+            id=row[0],
+            user_name=row[1],
+            account_holder_full_name=row[2],
+            currency=row[3],
+            activation_date=row[4],
+            balance=row[5],
+            created_date=row[6],
+            modified_date=row[7]
+        )
+        return account
+
+
+@app.function_name(name="GetAccountByHolderName")
+@app.route(route="account/byholder/{holder_name}", methods=["GET"], auth_level=func.AuthLevel.FUNCTION)
+def GetAccountByHolderName(req: func.HttpRequest) -> func.HttpResponse:
+    holder_name = req.route_params.get("holder_name")
+    account = _getAccountByHolderName(holder_name)
+    if not account:
+        return _json_response({"error": "Not found."}, status_code=404)
+    return _json_response(account.__dict__)
+
+# get account stocks by account holder name, look up account by holder name and then get stocks for that account
+@app.function_name(name="GetAccountStocksByHolderName")
+@app.route(route="account/stocks/byholder/{holder_name}", methods=["GET"], auth_level=func.AuthLevel.FUNCTION)
+def GetAccountStocksByHolderName(req: func.HttpRequest) -> func.HttpResponse:
+    holder_name = req.route_params.get("holder_name")
+    account = _getAccountByHolderName(holder_name)
+    if not account:
+        return _json_response({"error": "Account not found."}, status_code=404)
+
+    #  query AccountStocks and it should join the stock_id and purchase_order_id
+    query = """
+    SELECT AccountStocks.*, Stocks.*, PurchaseOrders.*
+    FROM AccountStocks
+    JOIN Stocks ON AccountStocks.StockId = Stocks.Id
+    JOIN PurchaseOrders ON AccountStocks.PurchaseOrderId = PurchaseOrders.Id
+    WHERE AccountStocks.AccountId = ?
+    """
+
+    with _get_sql_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, (account.id,))
+        rows = cursor.fetchall()
+        stocks = []
+        for row in rows:
+            # append row as dict to stocks list
+            stocks.append(_row_to_dict(cursor, row))
+        return _json_response(stocks)
