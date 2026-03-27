@@ -103,7 +103,9 @@ resource "azurerm_function_app_flex_consumption" "this" {
     "AzureWebJobsStorage__tableServiceUri" = data.azurerm_storage_account.this.primary_table_endpoint
     "AZURE_CLIENT_ID" = azurerm_user_assigned_identity.function.client_id
     "STORAGE_ACCOUNT_NAME" = data.azurerm_storage_account.this.name
-
+    "SERVER_NAME" = azurerm_mssql_server.this.name
+    "DATABASE_NAME" = azurerm_mssql_database.this.name
+    "UID" = data.azurerm_user_assigned_identity.this.client_id
   }
 
   site_config {
@@ -113,7 +115,8 @@ resource "azurerm_function_app_flex_consumption" "this" {
   identity {
     type = "UserAssigned"
     identity_ids = [
-      azurerm_user_assigned_identity.function.id
+      azurerm_user_assigned_identity.function.id,
+      data.azurerm_user_assigned_identity.this.id
     ]
   }
 
@@ -126,16 +129,16 @@ data "archive_file" "function_zip"  {
   output_path = "${path.module}/function.zip"
 }
 
-# resource "null_resource" "deploy_function_code" {
-#   triggers = {
-#     index = "${timestamp()}"
-#   }
-#   provisioner "local-exec" {
-#     command = "az functionapp deployment source config-zip --name ${azurerm_function_app_flex_consumption.this.name} --resource-group ${data.azurerm_resource_group.this.name} --src ${data.archive_file.function_zip.output_path}"
-#   }
+resource "null_resource" "deploy_function_code" {
+  triggers = {
+    index = "${timestamp()}"
+  }
+  provisioner "local-exec" {
+    command = "az functionapp deployment source config-zip --name ${azurerm_function_app_flex_consumption.this.name} --resource-group ${data.azurerm_resource_group.this.name} --src ${data.archive_file.function_zip.output_path}"
+  }
 
-#   depends_on = [azurerm_function_app_flex_consumption.this, azurerm_private_endpoint.function]
-# }
+  depends_on = [azurerm_function_app_flex_consumption.this, azurerm_private_endpoint.function]
+}
 
 # create a holdings container and add the data/hodlings.csv file to it
 resource "azurerm_storage_container" "holdings" {

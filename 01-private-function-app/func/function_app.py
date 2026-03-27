@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import os
+import pyodbc
 import requests
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
@@ -61,3 +62,30 @@ def ListHoldings(req: func.HttpRequest) -> func.HttpResponse:
         mimetype="application/json",
         status_code=200
     )
+
+@app.function_name(name="ListTables")
+@app.route(route="tables", auth_level=func.AuthLevel.FUNCTION)
+def ListTables(req: func.HttpRequest) -> func.HttpResponse:
+
+    conn_str = (
+        f"DRIVER={{ODBC Driver 18 for SQL Server}};"
+        f"SERVER={os.environ.get('SERVER_NAME')}.database.windows.net;"
+        f"DATABASE={os.environ.get('DATABASE_NAME')};"
+        f"UID={os.environ.get('UID')};"
+        "Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;Authentication=ActiveDirectoryMsi;"
+    )
+
+    print(f"connecting to {conn_str}")
+    with pyodbc.connect(conn_str) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT TOP 50 * FROM sys.tables;")
+        rows = cursor.fetchall()
+
+        # Format results
+        table_names = [row[0] for row in rows]
+        print(table_names)
+        return func.HttpResponse(
+            json.dumps(table_names),
+            mimetype="application/json",
+            status_code=200
+        )
