@@ -179,6 +179,7 @@ resource "azurerm_private_endpoint" "function" {
     private_dns_zone_ids = [ data.azurerm_private_dns_zone.azurewebsites.id ]
 
   }
+
   tags = local.tags
 }
 
@@ -192,6 +193,13 @@ resource "azurerm_mssql_server" "this" {
     login_username              = data.azurerm_user_assigned_identity.this.name
     object_id                   = data.azurerm_user_assigned_identity.this.client_id
     azuread_authentication_only = true
+  }
+
+  identity {
+    type = "UserAssigned"
+    identity_ids = [
+      data.azurerm_user_assigned_identity.this.id
+    ]
   }
 
   tags = local.tags
