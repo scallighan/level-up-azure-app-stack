@@ -39,7 +39,6 @@ resource "random_password" "password" {
 }
 
 resource "azurerm_key_vault_secret" "apikey" {
-  depends_on = [ azurerm_role_assignment.kv_officer, azurerm_role_assignment.kv_cert_officer ]
   name         = "MCP-API-KEY"
   value        = random_password.password.result
   key_vault_id = data.azurerm_key_vault.this.id
