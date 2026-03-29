@@ -212,7 +212,7 @@ resource "azurerm_api_management_api" "dataaccess" {
   display_name        = "Data Access API"
   path                = "dataaccess"
   protocols           = ["https"]
-  service_url         = "https://${data.azurerm_linux_function_app.this.default_hostname}"
+  service_url         = "https://${data.azurerm_linux_function_app.this.default_hostname}/www"
 }
 
 resource "azurerm_api_management_api_operation" "hello" {
@@ -234,7 +234,7 @@ resource "azurerm_api_management_api_operation_policy" "hello" {
 <policies>
     <inbound>
         <base />
-        <rewrite-uri template="/www/HttpExample" />
+        <rewrite-uri template="/HttpExample" />
     </inbound>
     <backend>
         <base />
@@ -246,3 +246,26 @@ resource "azurerm_api_management_api_operation_policy" "hello" {
 XML
 }
 
+resource "azurerm_api_management_api_operation" "account" {
+  operation_id        = "account-by-holder"
+  api_name            = azurerm_api_management_api.dataaccess.name
+  api_management_name = azurerm_api_management.apim.name
+  resource_group_name = data.azurerm_resource_group.this.name
+  display_name        = "account-by-holder"
+  method              = "GET"
+  url_template        = "/account/byholder/{holder}"
+}
+
+
+
+resource "azurerm_api_management_named_value" "key" {
+  name                = "function-key"
+  resource_group_name = azurerm_resource_group.example.name
+  api_management_name = azurerm_api_management.example.name
+  display_name        = "Function-Key"
+  secret              = true
+  value_from_key_vault {
+    secret_id = "${data.azurerm_keyvault.this.id}/secrets/function-host-key"
+    identity_client_id = data.azurerm_user_assigned_identity.this.client_id
+  }
+}
