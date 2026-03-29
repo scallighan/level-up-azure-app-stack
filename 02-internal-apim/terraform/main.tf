@@ -215,6 +215,20 @@ resource "azurerm_api_management_api" "dataaccess" {
   service_url         = "https://${data.azurerm_linux_function_app.this.default_hostname}/www"
 }
 
+resource "azurerm_api_management_api_policy" "dataaccess" {
+  api_name            = azurerm_api_management_api.dataaccess.name
+  api_management_name = azurerm_api_management_api.dataaccess.api_management_name
+  resource_group_name = azurerm_api_management_api.dataaccess.resource_group_name
+
+  xml_content = <<XML
+<policies>
+  <inbound>
+    
+  </inbound>
+</policies>
+XML
+}
+
 resource "azurerm_api_management_api_operation" "hello" {
   operation_id        = "hello"
   api_name            = azurerm_api_management_api.dataaccess.name
@@ -262,12 +276,10 @@ resource "azurerm_api_management_api_operation" "account" {
   }
 }
 
-
-
 resource "azurerm_api_management_named_value" "key" {
   name                = "function-key"
   resource_group_name = data.azurerm_resource_group.this.name
-  api_management_name = azurerm_api_management_api.dataaccess.name
+  api_management_name = azurerm_api_management.apim.name
   display_name        = "Function-Key"
   secret              = true
   value_from_key_vault {
