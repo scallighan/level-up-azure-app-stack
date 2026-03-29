@@ -285,6 +285,22 @@ resource "azurerm_api_management_api_operation" "account" {
   }
 }
 
+resource "azurerm_api_management_api_operation" "stocks" {
+  operation_id        = "stocks-by-holder"
+  api_name            = azurerm_api_management_api.dataaccess.name
+  api_management_name = azurerm_api_management.apim.name
+  resource_group_name = data.azurerm_resource_group.this.name
+  display_name        = "stocks-by-holder"
+  method              = "GET"
+  url_template        = "/account/stocks/byholder/{holder}"
+
+  template_parameter {
+    name = "holder"
+    type = "string"
+    required = true
+  }
+}
+
 resource "azurerm_api_management_named_value" "key" {
   name                = "function-key"
   resource_group_name = data.azurerm_resource_group.this.name

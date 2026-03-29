@@ -91,6 +91,7 @@ resource "azurerm_function_app_flex_consumption" "this" {
   instance_memory_in_mb       = 2048
 
   virtual_network_subnet_id = azurerm_subnet.function.id
+  public_network_access_enabled = false
 
   webdeploy_publish_basic_authentication_enabled = false
 
