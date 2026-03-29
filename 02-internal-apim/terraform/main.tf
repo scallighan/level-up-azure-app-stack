@@ -254,6 +254,12 @@ resource "azurerm_api_management_api_operation" "account" {
   display_name        = "account-by-holder"
   method              = "GET"
   url_template        = "/account/byholder/{holder}"
+
+  template_parameter {
+    name = "holder"
+    type = "string"
+    required = true
+  }
 }
 
 
@@ -265,7 +271,7 @@ resource "azurerm_api_management_named_value" "key" {
   display_name        = "Function-Key"
   secret              = true
   value_from_key_vault {
-    secret_id = "${data.azurerm_key_vault.this.vault_uri}/secrets/function-host-key"
+    secret_id = "${data.azurerm_key_vault.this.vault_uri}secrets/function-host-key"
     identity_client_id = data.azurerm_user_assigned_identity.this.client_id
   }
 }
