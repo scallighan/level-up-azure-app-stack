@@ -260,8 +260,8 @@ resource "azurerm_api_management_api_operation" "account" {
 
 resource "azurerm_api_management_named_value" "key" {
   name                = "function-key"
-  resource_group_name = azurerm_resource_group.example.name
-  api_management_name = azurerm_api_management.example.name
+  resource_group_name = data.azurerm_resource_group.this.name
+  api_management_name = azurerm_api_management_api.dataaccess.name
   display_name        = "Function-Key"
   secret              = true
   value_from_key_vault {
