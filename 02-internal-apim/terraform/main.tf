@@ -223,8 +223,17 @@ resource "azurerm_api_management_api_policy" "dataaccess" {
   xml_content = <<XML
 <policies>
   <inbound>
-    
+    <base />
+    <set-query-parameter name="code" exists-action="override">
+      <value>{{function-key}}</value>
+    </set-query-parameter>
   </inbound>
+  <backend>
+    <base />
+  </backend>
+  <outbound>
+    <base />
+  </outbound>
 </policies>
 XML
 }
