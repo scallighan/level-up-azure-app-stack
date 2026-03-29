@@ -65,7 +65,14 @@ data "azurerm_user_assigned_identity" "this" {
   resource_group_name = data.azurerm_resource_group.this.name
 }
 
+data "azurerm_key_vault" "this" {
+  name                = "kv-${local.func_name}"
+  resource_group_name = data.azurerm_resource_group.this.name
+}
+
+
 data "azurerm_linux_function_app" "this" {
   name                = "func-${local.func_name}"
   resource_group_name = data.azurerm_resource_group.this.name
 }
+
