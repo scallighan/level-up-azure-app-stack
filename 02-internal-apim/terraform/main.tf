@@ -277,6 +277,7 @@ resource "azurerm_api_management_api_operation" "account" {
   display_name        = "account-by-holder"
   method              = "GET"
   url_template        = "/account/byholder/{holder}"
+  description         = "Returns the basic account information for a given account holder."
 
   template_parameter {
     name = "holder"
@@ -293,6 +294,7 @@ resource "azurerm_api_management_api_operation" "stocks" {
   display_name        = "stocks-by-holder"
   method              = "GET"
   url_template        = "/account/stocks/byholder/{holder}"
+  description         = "Returns the stock holdings and portfolio value for a given account holder."
 
   template_parameter {
     name = "holder"

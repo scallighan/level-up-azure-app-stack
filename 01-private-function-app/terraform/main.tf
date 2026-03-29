@@ -144,6 +144,7 @@ resource "null_resource" "deploy_function_code" {
 
 # Add the function app host key to keyvault
 data "azurerm_function_app_host_keys" "this" {
+  depends_on = [ azurerm_function_app_flex_consumption.this ]
   name                = azurerm_function_app_flex_consumption.this.name
   resource_group_name = data.azurerm_resource_group.this.name
 }
@@ -206,6 +207,8 @@ resource "azurerm_mssql_server" "this" {
   resource_group_name          = data.azurerm_resource_group.this.name
   location                     = "westus2" # capacity
   version                      = "12.0"
+
+  public_network_access_enabled = false
   azuread_administrator {
     login_username              = data.azurerm_user_assigned_identity.this.name
     object_id                   = data.azurerm_user_assigned_identity.this.client_id
