@@ -32,21 +32,116 @@ provider "azurerm" {
   subscription_id = var.subscription_id
 }
 
-resource "azuread_application" "function" {
-  display_name = "func${local.func_name}"
-  owners       = [data.azurerm_client_config.current.object_id]
-  sign_in_audience = "AzureADMyOrg" 
+resource "azurerm_container_app" "bot" {
+  name                         = "aca-bot-${local.func_name}"
+  container_app_environment_id = data.azurerm_container_app_environment.this.id
+  resource_group_name          = data.azurerm_resource_group.this.name
+  revision_mode                = "Single"
+  workload_profile_name        = "Consumption"
 
-  required_resource_access {
-    resource_app_id = "00000003-0000-0000-c000-000000000000" # Microsoft Graph
+  template {
+    container {
+      name   = "bot"
+      image  = "ghcr.io/${var.gh_repo}-bot:latest"
+      cpu    = 0.5
+      memory = "1Gi"
 
-    resource_access {
-      id   = "e1fe6dd8-ba31-4d61-89e7-88639da4683d" # User.Read
-      type = "Scope"
+      env {
+        name = "RUNNING_ON_AZURE"
+        value = "1"
+      }
+
+      env {
+        name = "TENANT_ID"
+        value = data.azurerm_client_config.current.tenant_id
+      }
+
+      env {
+        name = "CLIENT_ID"
+        value = azurerm_user_assigned_identity.bot.client_id
+      }
+      env {
+        name = "tenantId"
+        value = data.azurerm_client_config.current.tenant_id
+      }
+
+      env {
+        name = "clientId"
+        value = azurerm_user_assigned_identity.bot.client_id
+      }
+
+      env {
+        name = "AZURE_CLIENT_ID"
+        value = azurerm_user_assigned_identity.bot.client_id
+      }
+
+      # new for M365 Agent SDK
+      env {
+        name = "CONNECTIONS__SERVICE_CONNECTION__SETTINGS__TENANTID"
+        value = data.azurerm_client_config.current.tenant_id
+      }
+      env {
+        name = "CONNECTIONS__SERVICE_CONNECTION__SETTINGS__CLIENTID"
+        value = azurerm_user_assigned_identity.bot.client_id
+      }
+      env {
+        name = "CONNECTIONS__SERVICE_CONNECTION__SETTINGS__AUTHTYPE"
+        value = "UserManagedIdentity"
+      }
+
+    }
+    http_scale_rule {
+      name                = "http-1"
+      concurrent_requests = "100"
+    }
+    min_replicas = 1
+    max_replicas = 1
+  }
+
+  ingress {
+    allow_insecure_connections = false
+    external_enabled           = true
+    target_port                = 3978
+    transport                  = "auto"
+    traffic_weight {
+      latest_revision = true
+      percentage      = 100
     }
   }
 
+  identity {
+    type = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.bot.id]
+  }
+  tags = local.tags
+
   lifecycle {
-    ignore_changes = [ web[0].redirect_uris ]
+    ignore_changes = [ secret ]
   }
 }
+
+resource "azurerm_user_assigned_identity" "bot" {
+  location            = data.azurerm_resource_group.this.location
+  name                = "uai-bot-${local.func_name}"
+  resource_group_name = data.azurerm_resource_group.this.name
+}
+
+resource "azurerm_bot_service_azure_bot" "teamsbot" {
+  name                = "bot-${local.func_name}"
+  resource_group_name = data.azurerm_resource_group.this.name
+  location            = "global"
+  microsoft_app_id    = azurerm_user_assigned_identity.bot.client_id
+  sku                 = "F0"
+  endpoint            = "https://${azurerm_container_app.bot.ingress[0].fqdn}/api/messages"
+  microsoft_app_msi_id = azurerm_user_assigned_identity.bot.id
+  microsoft_app_tenant_id = data.azurerm_client_config.current.tenant_id
+  microsoft_app_type  = "UserAssignedMSI"
+  tags = local.tags
+}
+
+resource "azurerm_bot_channel_ms_teams" "teams" {
+  bot_name            = azurerm_bot_service_azure_bot.teamsbot.name
+  location            = azurerm_bot_service_azure_bot.teamsbot.location
+  resource_group_name = data.azurerm_resource_group.this.name
+}
+

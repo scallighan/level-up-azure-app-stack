@@ -6,6 +6,6 @@ locals {
   tags = {
     "managed_by" = "terraform"
     "repo"       = local.gh_repo
-    "lab"        = "02-internal-apim"
+    "lab"        = "06-copilot-and-teams-integration"
   }
 }

@@ -59,3 +59,13 @@ data "azurerm_log_analytics_workspace" "this" {
   name                = "levelup-${data.azurerm_client_config.current.subscription_id}-${local.loc_short}"
   resource_group_name = data.azurerm_resource_group.this.name
 }
+
+data "azurerm_application_insights" "this" {
+  name                = "${local.func_name}-insights"
+  resource_group_name = data.azurerm_resource_group.this.name
+}
+
+data "azurerm_container_app_environment" "this" {
+  name                = "ace-${local.func_name}"
+  resource_group_name = data.azurerm_resource_group.this.name
+}
