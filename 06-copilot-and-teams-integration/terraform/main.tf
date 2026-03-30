@@ -90,7 +90,7 @@ resource "azurerm_container_app" "bot" {
       }
 
       env {
-        name = "FOUNDRY_PROJECT_ENDPOINT"
+        name = "AZURE_AI_PROJECT_ENDPOINT"
         value = "https://aif${local.func_name}.services.ai.azure.com/api/projects/fp${local.func_name}"
       }
 

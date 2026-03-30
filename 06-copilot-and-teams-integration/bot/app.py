@@ -10,9 +10,9 @@ from microsoft_agents.hosting.core import (
 from microsoft_agents.hosting.aiohttp import CloudAdapter
 from os import environ
 from .server import start_server
+import os
+from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
-from agent_framework import Agent, tool
-from agent_framework_foundry import FoundryChatClient
 
 agents_sdk_config = load_configuration_from_env(environ)
 print(f"Loaded configuration: {agents_sdk_config}")
@@ -38,43 +38,40 @@ AGENT_APP.conversation_update("membersAdded")(_help)
 
 AGENT_APP.message("help")(_help)
 
-def _init_agent():
-    print("Initializing agent...")
-    # Any additional initialization logic can go here
-    credential = DefaultAzureCredential()
-    client = FoundryChatClient(
-        project_endpoint=environ.get("FOUNDRY_PROJECT_ENDPOINT"),
-        model=environ.get("FOUNDRY_MODEL"),
-        credential=credential)
-    agent = Agent(
-        client=client, 
-        name="LevelUpAgent", 
-        description="An agent for the Level Up Azure App Stack workshop", 
-        tools=[]
-    )
-    print("Agent initialized.")
-    return agent
-
-MY_AGENT = None
-SESSION = None
+CONVERSATION_ID=None
 
 @AGENT_APP.activity("message")
 async def on_message(context: TurnContext, _):
-    global MY_AGENT
-    global SESSION
-    print(f"Received message: {context.activity.text}")
-    
-    if MY_AGENT is None:
-        MY_AGENT = _init_agent()
-    
+    global CONVERSATION_ID
+
+    text = context.activity.text
     try:
-        if SESSION is None:
-            SESSION = MY_AGENT.start_session()
-        response = await MY_AGENT.run(context.activity.text, session=SESSION)
-        await context.send_activity(response)
+        credential = DefaultAzureCredential()
+        project_client = AIProjectClient(credential=credential, endpoint=os.getenv("AZURE_AI_PROJECT_ENDPOINT"))
+        with project_client.get_openai_client() as openai_client:
+            agent = project_client.get_agent("bootcampagent")
+            if CONVERSATION_ID is None:
+                conversation = openai_client.conversations.create(
+                    items=[],
+                )
+                CONVERSATION_ID = conversation.id
+            openai_client.conversations.items.create(
+            conversation_id=CONVERSATION_ID,
+                items=[{"type": "message", "role": "user", "content": text}],
+            )
+            response = openai_client.responses.create(
+                conversation=CONVERSATION_ID,
+                extra_body={"agent_reference": {"name": agent.name, "type": "agent_reference"}},
+            )
+            output_text = response.output_text
+            print(f"Response output: {output_text}")    
+            await context.send_activity(f"{output_text}")
     except Exception as e:
         print(f"Error processing message: {e}")
-        await context.send_activity(f"Error processing message: {e}")
+        await context.send_activity(f"Sorry, something went wrong while processing your message. {e}")
+
+
+    
     
 
 if __name__ == "__main__":
