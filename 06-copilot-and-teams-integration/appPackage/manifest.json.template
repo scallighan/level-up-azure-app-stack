@@ -33,7 +33,7 @@
   "bots": [
     {
       "botId": "${{BOT_ID}}",
-      "scopes": ["personal", "team"],
+      "scopes": ["personal"],
       "isNotificationOnly": false,
       "supportsCalling": false,
       "supportsVideo": false,
@@ -41,8 +41,7 @@
       "commandLists":[
         {
             "scopes": [
-                "personal",
-                "team"
+                "personal"
             ],
             "commands": [
                 {

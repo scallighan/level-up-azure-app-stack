@@ -89,6 +89,16 @@ resource "azurerm_container_app" "bot" {
         value = "UserManagedIdentity"
       }
 
+      env {
+        name = "FOUNDRY_PROJECT_ENDPOINT"
+        value = "https://aif${local.func_name}.services.ai.azure.com/api/projects/fp${local.func_name}"
+      }
+
+      env {
+        name = "FOUNDRY_MODEL"
+        value = "gpt-5-mini"
+      }
+
     }
     http_scale_rule {
       name                = "http-1"
@@ -145,3 +155,9 @@ resource "azurerm_bot_channel_ms_teams" "teams" {
   resource_group_name = data.azurerm_resource_group.this.name
 }
 
+# give the bot identity access to foundry with Azure AI User role
+resource "azurerm_role_assignment" "bot_foundry_access" {
+  scope                = data.azurerm_resource_group.this.id
+  role_definition_name = "Azure AI User"
+  principal_id         = azurerm_user_assigned_identity.bot.principal_id
+}

@@ -10,6 +10,9 @@ from microsoft_agents.hosting.core import (
 from microsoft_agents.hosting.aiohttp import CloudAdapter
 from os import environ
 from .server import start_server
+from azure.identity import DefaultAzureCredential
+from agent_framework import Agent, tool
+from agent_framework.foundry import FoundryChatClient
 
 agents_sdk_config = load_configuration_from_env(environ)
 print(f"Loaded configuration: {agents_sdk_config}")
@@ -34,13 +37,45 @@ async def _help(context: TurnContext, _: TurnState):
 AGENT_APP.conversation_update("membersAdded")(_help)
 
 AGENT_APP.message("help")(_help)
-AGENT_APP.message("Help")(_help)
 
+def _init_agent():
+    print("Initializing agent...")
+    # Any additional initialization logic can go here
+    credential = DefaultAzureCredential()
+    client = FoundryChatClient(
+        project_endpoint=environ.get("FOUNDRY_PROJECT_ENDPOINT"),
+        model=environ.get("FOUNDRY_MODEL"),
+        credential=credential)
+    agent = Agent(
+        client=client, 
+        name="LevelUpAgent", 
+        description="An agent for the Level Up Azure App Stack workshop", 
+        tools=[]
+    )
+    print("Agent initialized.")
+    return agent
+
+MY_AGENT = None
+SESSION = None
 
 @AGENT_APP.activity("message")
 async def on_message(context: TurnContext, _):
+    global MY_AGENT
+    global SESSION
     print(f"Received message: {context.activity.text}")
-    await context.send_activity(f"you said: {context.activity.text}")
+    
+    if MY_AGENT is None:
+        MY_AGENT = _init_agent()
+    
+    try:
+        if SESSION is None:
+            SESSION = MY_AGENT.start_session()
+        response = await MY_AGENT.run(context.activity.text, session=SESSION)
+        await context.send_activity(response)
+    except Exception as e:
+        print(f"Error processing message: {e}")
+        await context.send_activity(f"Error processing message: {e}")
+    
 
 if __name__ == "__main__":
     try:
