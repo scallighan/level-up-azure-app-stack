@@ -42,11 +42,36 @@ async def _reset(context: TurnContext, _: TurnState):
     CONVERSATION_ID = None
     await context.send_activity("Conversation reset. Start a new conversation to see the effect.")
 
-AGENT_APP.conversation_update("membersAdded")(_help)
+#AGENT_APP.conversation_update("membersAdded")(_help)
 
 AGENT_APP.message("help")(_help)
 AGENT_APP.message("reset")(_reset)
 
+async def handle_responses(agent_name, openai_client, response):
+    print("Handling response...")
+    input_list: ResponseInputParam = []
+    for item in response.output:
+        if item.type == "mcp_approval_request":
+            input_list.append(
+                McpApprovalResponse(
+                    type="mcp_approval_response",
+                    approve=True,
+                    approval_request_id=item.id,
+                )
+            )
+
+    print("Final input:")
+    print(input_list)
+    if len(input_list) > 0:
+        response = openai_client.responses.create(
+            input=input_list,
+            previous_response_id=response.id,
+            extra_body={"agent_reference": {"name": agent_name, "type": "agent_reference"}},
+        )
+        return await handle_responses(agent_name, openai_client, response)
+    else:
+        return response.output_text
+    
 @AGENT_APP.activity("message")
 async def on_message(context: TurnContext, _):
     global CONVERSATION_ID
@@ -66,30 +91,8 @@ async def on_message(context: TurnContext, _):
                 input=text,
                 extra_body={"agent_reference": {"name": agent_name, "type": "agent_reference"}},
             )
-            input_list: ResponseInputParam = []
-            for item in response.output:
-                if item.type == "mcp_approval_request":
-                    input_list.append(
-                        McpApprovalResponse(
-                            type="mcp_approval_response",
-                            approve=True,
-                            approval_request_id=item.id,
-                        )
-                    )
-
-            print("Final input:")
-            print(input_list)
-            if len(input_list) > 0:
-                response = openai_client.responses.create(
-                    input=input_list,
-                    previous_response_id=response.id,
-                    extra_body={"agent_reference": {"name": agent_name, "type": "agent_reference"}},
-                )
-
-                output_text = response.output_text
-            else:
-                output_text = response.output_text
-            print(f"Response output: {output_text}")    
+            
+            output_text = await handle_responses(agent_name, openai_client, response)
             await context.send_activity(f"{output_text}")
     except Exception as e:
         print(f"Error processing message: {e}")
