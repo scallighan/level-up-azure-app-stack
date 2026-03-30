@@ -48,6 +48,7 @@ AGENT_APP.message("help")(_help)
 AGENT_APP.message("reset")(_reset)
 
 async def handle_responses(agent_name, openai_client, response):
+    global CONVERSATION_ID
     print("Handling response...")
     input_list: ResponseInputParam = []
     for item in response.output:
@@ -65,7 +66,7 @@ async def handle_responses(agent_name, openai_client, response):
     if len(input_list) > 0:
         response = openai_client.responses.create(
             input=input_list,
-            previous_response_id=response.id,
+            conversation=CONVERSATION_ID,
             extra_body={"agent_reference": {"name": agent_name, "type": "agent_reference"}},
         )
         return await handle_responses(agent_name, openai_client, response)
