@@ -28,17 +28,23 @@ AGENT_APP = AgentApplication[TurnState](
     authorization=AUTHORIZATION
 )
 
+CONVERSATION_ID=None
+
 async def _help(context: TurnContext, _: TurnState):
     await context.send_activity(
         "Welcome to the Level Up Agent sample 🚀. "
         "Type 'help' for help or send a message to see the echo feature in action."
     )
 
+async def _reset(context: TurnContext, _: TurnState):
+    global CONVERSATION_ID
+    CONVERSATION_ID = None
+    await context.send_activity("Conversation reset. Start a new conversation to see the effect.")
+
 AGENT_APP.conversation_update("membersAdded")(_help)
 
 AGENT_APP.message("help")(_help)
-
-CONVERSATION_ID=None
+AGENT_APP.message("reset")(_reset)
 
 @AGENT_APP.activity("message")
 async def on_message(context: TurnContext, _):
@@ -56,7 +62,7 @@ async def on_message(context: TurnContext, _):
                 )
                 CONVERSATION_ID = conversation.id
             openai_client.conversations.items.create(
-            conversation_id=CONVERSATION_ID,
+                conversation_id=CONVERSATION_ID,
                 items=[{"type": "message", "role": "user", "content": text}],
             )
             response = openai_client.responses.create(
