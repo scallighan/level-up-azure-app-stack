@@ -13,6 +13,7 @@ from .server import start_server
 import os
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
+from openai.types.responses.response_input_param import McpApprovalResponse, ResponseInputParam
 
 agents_sdk_config = load_configuration_from_env(environ)
 print(f"Loaded configuration: {agents_sdk_config}")
@@ -57,19 +58,37 @@ async def on_message(context: TurnContext, _):
         with project_client.get_openai_client() as openai_client:
             agent = project_client.get_agent("bootcampagent")
             if CONVERSATION_ID is None:
-                conversation = openai_client.conversations.create(
-                    items=[],
-                )
+                conversation = openai_client.conversations.create()
                 CONVERSATION_ID = conversation.id
-            openai_client.conversations.items.create(
-                conversation_id=CONVERSATION_ID,
-                items=[{"type": "message", "role": "user", "content": text}],
-            )
+            
             response = openai_client.responses.create(
                 conversation=CONVERSATION_ID,
+                input=text,
                 extra_body={"agent_reference": {"name": agent.name, "type": "agent_reference"}},
             )
-            output_text = response.output_text
+            input_list: ResponseInputParam = []
+            for item in response.output:
+                if item.type == "mcp_approval_request":
+                    input_list.append(
+                        McpApprovalResponse(
+                            type="mcp_approval_response",
+                            approve=True,
+                            approval_request_id=item.id,
+                        )
+                    )
+
+            print("Final input:")
+            print(input_list)
+            if len(input_list) > 0:
+                response = openai_client.responses.create(
+                    input=input_list,
+                    previous_response_id=response.id,
+                    extra_body={"agent_reference": {"name": agent.name, "type": "agent_reference"}},
+                )
+
+                output_text = response.output_text
+            else:
+                output_text = response.output_text
             print(f"Response output: {output_text}")    
             await context.send_activity(f"{output_text}")
     except Exception as e:
