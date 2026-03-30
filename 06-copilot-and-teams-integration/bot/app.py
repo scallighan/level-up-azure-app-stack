@@ -12,7 +12,7 @@ from os import environ
 from .server import start_server
 from azure.identity import DefaultAzureCredential
 from agent_framework import Agent, tool
-from agent_framework.foundry import FoundryChatClient
+from agent_framework_foundry import FoundryChatClient
 
 agents_sdk_config = load_configuration_from_env(environ)
 print(f"Loaded configuration: {agents_sdk_config}")
