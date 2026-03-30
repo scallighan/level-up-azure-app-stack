@@ -56,7 +56,7 @@ async def on_message(context: TurnContext, _):
         credential = DefaultAzureCredential()
         project_client = AIProjectClient(credential=credential, endpoint=os.getenv("AZURE_AI_PROJECT_ENDPOINT"))
         with project_client.get_openai_client() as openai_client:
-            agent = project_client.get_agent("bootcampagent")
+            agent_name = "bootcampagent"
             if CONVERSATION_ID is None:
                 conversation = openai_client.conversations.create()
                 CONVERSATION_ID = conversation.id
@@ -64,7 +64,7 @@ async def on_message(context: TurnContext, _):
             response = openai_client.responses.create(
                 conversation=CONVERSATION_ID,
                 input=text,
-                extra_body={"agent_reference": {"name": agent.name, "type": "agent_reference"}},
+                extra_body={"agent_reference": {"name": agent_name, "type": "agent_reference"}},
             )
             input_list: ResponseInputParam = []
             for item in response.output:
@@ -83,7 +83,7 @@ async def on_message(context: TurnContext, _):
                 response = openai_client.responses.create(
                     input=input_list,
                     previous_response_id=response.id,
-                    extra_body={"agent_reference": {"name": agent.name, "type": "agent_reference"}},
+                    extra_body={"agent_reference": {"name": agent_name, "type": "agent_reference"}},
                 )
 
                 output_text = response.output_text
