@@ -70,6 +70,7 @@ async def handle_responses(agent_name, openai_client, response):
         )
         return await handle_responses(agent_name, openai_client, response)
     else:
+        print(f"Returning output text: {response.output_text}")
         return response.output_text
     
 @AGENT_APP.activity("message")
@@ -77,6 +78,7 @@ async def on_message(context: TurnContext, _):
     global CONVERSATION_ID
 
     text = context.activity.text
+    print(f"Received message: {text}")
     try:
         credential = DefaultAzureCredential()
         project_client = AIProjectClient(credential=credential, endpoint=os.getenv("AZURE_AI_PROJECT_ENDPOINT"))
